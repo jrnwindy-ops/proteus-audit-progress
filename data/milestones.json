@@ -1,0 +1,170 @@
+[
+ {
+  "date": "2026-10-09",
+  "milestone": "Proposal and document request sent",
+  "who": "Martinez",
+  "status": "Done",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-10-12",
+  "milestone": "Kickoff call: approach agreed, Brenda named as main contact",
+  "who": "Everyone",
+  "status": "Done",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-10-13",
+  "milestone": "Secure upload folder set up and shared with Brenda",
+  "who": "Martinez",
+  "status": "Done",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-10-14",
+  "milestone": "Wave 1 documents due: audit adjustments, trial balances and ledger, payroll registers, bank support",
+  "who": "Proteus",
+  "status": "Upcoming",
+  "major": true,
+  "short": "Wave 1 due"
+ },
+ {
+  "date": "2026-10-16",
+  "milestone": "Checkpoint: starting balances explained; wave 2 documents due",
+  "who": "Martinez and Proteus",
+  "status": "Upcoming",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-10-19",
+  "milestone": "Monday check-in with Patty",
+  "who": "Martinez and Patty",
+  "status": "Upcoming",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-10-21",
+  "milestone": "July 2025 rebuilt and reviewed with Patty; wave 3 documents due",
+  "who": "Martinez and Patty",
+  "status": "Upcoming",
+  "major": true,
+  "short": "July rebuilt"
+ },
+ {
+  "date": "2026-10-23",
+  "milestone": "August and September 2025 rebuilt",
+  "who": "Martinez",
+  "status": "Upcoming",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-10-26",
+  "milestone": "Monday check-in with Patty",
+  "who": "Martinez and Patty",
+  "status": "Upcoming",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-10-28",
+  "milestone": "October and November 2025 rebuilt; wave 4 documents due",
+  "who": "Martinez and Proteus",
+  "status": "Upcoming",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-10-30",
+  "milestone": "First batch of adjusting entries to Patty for approval (starting balances, July to December)",
+  "who": "Martinez",
+  "status": "Upcoming",
+  "major": true,
+  "short": "Entries batch 1"
+ },
+ {
+  "date": "2026-11-02",
+  "milestone": "Monday check-in with Patty",
+  "who": "Martinez and Patty",
+  "status": "Upcoming",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-11-04",
+  "milestone": "January to March 2026 rebuilt",
+  "who": "Martinez",
+  "status": "Upcoming",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-11-06",
+  "milestone": "Second batch of adjusting entries to Patty (January to June and year-end)",
+  "who": "Martinez",
+  "status": "Upcoming",
+  "major": true,
+  "short": "Entries batch 2"
+ },
+ {
+  "date": "2026-11-09",
+  "milestone": "Schedule of federal awards tied to the books; memo to Price Paige and prior findings summary drafted",
+  "who": "Martinez",
+  "status": "Upcoming",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-11-11",
+  "milestone": "Complete package delivered to Proteus",
+  "who": "Martinez",
+  "status": "Upcoming",
+  "major": true,
+  "short": "Package to Proteus"
+ },
+ {
+  "date": "2026-11-12",
+  "milestone": "Proteus questions on the package",
+  "who": "Michelle and Patty",
+  "status": "Upcoming",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-11-13",
+  "milestone": "Review meeting and final decisions",
+  "who": "Everyone",
+  "status": "Upcoming",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-11-16",
+  "milestone": "Proteus submits final trial balance and schedule of federal awards to Price Paige",
+  "who": "Proteus",
+  "status": "Upcoming",
+  "major": true,
+  "short": "Submit to Price Paige"
+ },
+ {
+  "date": "2026-11-20",
+  "milestone": "Workforce grant review draft to Michelle",
+  "who": "Martinez",
+  "status": "Upcoming",
+  "major": false,
+  "short": ""
+ },
+ {
+  "date": "2026-11-30",
+  "milestone": "Workforce grant review and board summary delivered",
+  "who": "Martinez",
+  "status": "Upcoming",
+  "major": true,
+  "short": "Final deliverables"
+ }
+]

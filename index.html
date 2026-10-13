@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Proteus Audit Readiness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: navy masthead with gold rule, then a single 1180px column of cards on a cool paper ground. Martinez house palette. */
+:root{
+  --navy:#0F2A47; --navy-2:#163A5F; --blue:#09468F; --teal:#0E7D99; --gold:#F5B81F; --gold-d:#C8901A;
+  --green:#2E7D5B; --amber:#B7791F; --maroon:#9A3A43;
+  --bg:#F3F6FA; --panel:#FFFFFF; --ink:#0F2A47; --muted:#5B7390; --line:#DBE6F1; --soft:#EAF2FA; --track:#E3EAF2;
+  --ok-bg:#E3F2EA; --warn-bg:#FBF1DA; --bad-bg:#F6E3E5; --mute-bg:#EEF2F7;
+  --shadow:0 1px 2px rgba(15,42,71,.06),0 4px 16px rgba(15,42,71,.05);
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"Libre Franklin",-apple-system,"Segoe UI",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --blue:#7FB2EE; --teal:#5CC3DD; --green:#5FBF8F; --amber:#E6B44C; --maroon:#E58A93;
+  --bg:#0B1624; --panel:#122236; --ink:#E6EDF5; --muted:#9AB0C8; --line:#22374F; --soft:#173049; --track:#22374F;
+  --ok-bg:#163A2B; --warn-bg:#3A2F14; --bad-bg:#3D1F24; --mute-bg:#1A2B40;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --blue:#7FB2EE; --teal:#5CC3DD; --green:#5FBF8F; --amber:#E6B44C; --maroon:#E58A93;
+  --bg:#0B1624; --panel:#122236; --ink:#E6EDF5; --muted:#9AB0C8; --line:#22374F; --soft:#173049; --track:#22374F;
+  --ok-bg:#163A2B; --warn-bg:#3A2F14; --bad-bg:#3D1F24; --mute-bg:#1A2B40;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+.wrap{max-width:1180px;margin-inline:auto;padding-inline:20px}
+
+/* masthead */
+.mast{background:var(--navy);color:#fff;border-bottom:4px solid var(--gold);padding-top:env(safe-area-inset-top,0px)}
+.mast .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px 24px;padding-block:18px}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand .org{font-weight:700;letter-spacing:.32em;font-size:15px}
+.brand .tag{font-size:12px;color:#B9C8DA;letter-spacing:.04em}
+.prep{text-align:right;font-size:12px;color:#B9C8DA;line-height:1.5}
+.prep b{color:#fff;font-weight:600}
+.prep .upd{display:inline-flex;align-items:center;gap:6px;margin-top:2px;color:#fff}
+.prep .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 3px rgba(245,184,31,.25)}
+
+main.wrap{display:flex;flex-direction:column;gap:28px;padding-block:28px 40px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:28px;box-shadow:var(--shadow)}
+.kicker{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--teal)}
+.hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(26px,3.4vw,36px);line-height:1.15;margin:6px 0 10px;text-wrap:balance}
+.hero p{margin:0;max-width:62ch;color:var(--ink);font-size:16px}
+.hero p b{font-weight:700}
+.hero .next{margin-top:16px;display:inline-flex;gap:10px;align-items:baseline;background:var(--soft);border-radius:6px;padding:8px 12px;font-size:13px}
+.hero .next span:first-child{font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.1em;font-size:11px}
+.ring{display:flex;flex-direction:column;align-items:center;gap:10px}
+.ring svg{width:168px;height:168px;display:block}
+.ring .lg{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:12px;color:var(--muted)}
+.lg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 18px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+.tile::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--c,var(--blue))}
+.tile .lbl{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.tile .big{font-family:var(--serif);font-size:40px;line-height:1;font-weight:600;color:var(--c,var(--ink));font-variant-numeric:tabular-nums}
+.tile .big small{font-size:18px;color:var(--muted);font-weight:400}
+.tile .sub{font-size:13px;color:var(--muted)}
+
+/* sections */
+.sec{display:flex;flex-direction:column;gap:14px}
+.sec-h{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;border-bottom:2px solid var(--blue);padding-bottom:8px}
+.sec-h h2{margin:0;font-size:18px;font-weight:700;color:var(--blue);letter-spacing:.01em}
+.sec-h p{margin:0;font-size:13px;color:var(--muted);max-width:70ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);min-width:0}
+
+/* timeline strip */
+.strip{padding:18px 18px 10px}
+.strip svg{display:block;width:100%;height:auto;overflow:visible}
+
+/* waves */
+.waves{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.wave{padding:16px;display:flex;flex-direction:column;gap:10px}
+.wave .wh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wave .wn{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.wave .wd{font-size:12px;font-weight:600;background:var(--soft);color:var(--blue);padding:2px 8px;border-radius:999px;white-space:nowrap}
+.wave .frac{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.wave .frac small{font-family:var(--sans);font-size:13px;color:var(--muted);font-weight:400}
+.wave .cnt{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{display:flex;height:8px;border-radius:999px;overflow:hidden;background:var(--track)}
+.bar span{display:block;height:100%}
+.bar .ok{background:var(--green)}.bar .wa{background:var(--gold)}
+
+/* filters + table */
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--panel)}
+.seg button{font:inherit;font-size:13px;font-weight:600;padding:7px 14px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+select,input[type=search]{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+input[type=search]{flex:1 1 180px;min-width:0}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.count{font-size:12px;color:var(--muted);margin-left:auto}
+.tw{overflow:auto;max-height:720px}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+thead th{position:sticky;top:0;z-index:1;background:var(--navy);color:#fff;text-align:left;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;white-space:nowrap}
+tbody td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:hover td{background:var(--soft)}
+td.n{color:var(--muted);width:36px}
+.it{font-weight:600}
+.dt{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+td.note{font-size:12.5px;color:var(--muted);min-width:220px;line-height:1.45}
+.nw{white-space:nowrap}
+tr.done td{opacity:.72}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.c-ok{background:var(--ok-bg);color:var(--green)}.c-wa{background:var(--warn-bg);color:var(--amber)}
+.c-bad{background:var(--bad-bg);color:var(--maroon)}.c-mu{background:var(--mute-bg);color:var(--muted)}
+.when{font-size:12px;color:var(--muted)}.when.bad{color:var(--maroon);font-weight:700}.when.soon{color:var(--amber);font-weight:600}
+.empty{padding:28px;text-align:center;color:var(--muted);font-size:14px}
+
+/* work + timeline */
+.split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:28px;align-items:start}
+.ws{display:flex;flex-direction:column}
+.wrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.wrow:last-child{border-bottom:0}
+.wrow .t{font-weight:600}
+.wrow .p{grid-column:1/-1;font-size:12.5px;color:var(--muted);line-height:1.45}
+.wrow .pr{grid-column:1/-1;display:flex;align-items:center;gap:10px}
+.wrow .pr .bar{flex:1;height:6px}
+.wrow .pr small{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.tl{list-style:none;margin:0;padding:8px 16px 8px 16px}
+.tl li{display:grid;grid-template-columns:62px 16px minmax(0,1fr);gap:0 10px;position:relative;padding-block:9px}
+.tl .d{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding-top:1px;font-variant-numeric:tabular-nums}
+.tl .m{width:12px;height:12px;border-radius:50%;border:2px solid var(--line);background:var(--panel);margin-top:4px;position:relative;z-index:1}
+.tl li:not(:last-child)::after{content:"";position:absolute;left:77px;top:25px;bottom:-9px;width:2px;background:var(--line)}
+.tl li.done .m{background:var(--green);border-color:var(--green)}
+.tl li.next .m{background:var(--gold);border-color:var(--gold);box-shadow:0 0 0 4px rgba(245,184,31,.25)}
+.tl li.next{background:linear-gradient(90deg,transparent,var(--warn-bg) 30%,transparent);border-radius:6px}
+.tl li.major .x{font-weight:600}
+.tl .x{font-size:13.5px;line-height:1.4}
+.tl .w{display:block;font-size:12px;color:var(--muted)}
+.tl li.done .x{color:var(--muted)}
+
+.log{padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:13px}
+.log div{display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px}
+.log b{font-size:12px;color:var(--muted);text-transform:uppercase;font-variant-numeric:tabular-nums}
+
+footer{border-top:1px solid var(--line);margin-top:8px}
+footer .wrap{padding-block:20px calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted)}
+footer b{color:var(--ink)}
+
+@media (max-width:900px){
+  .tiles,.waves{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .split{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:620px){
+  .hero{grid-template-columns:minmax(0,1fr);padding:20px}
+  .ring{order:-1}
+  .prep{text-align:left}
+  .hide-sm{display:none}
+  .tile .big{font-size:32px}
+}
+@media (max-width:620px){
+  thead{display:none}
+  tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  tbody td{display:block;border:0;padding:0}
+  td.n{display:none}
+  tbody td:nth-child(2){grid-column:1/-1}
+  tbody td:nth-child(3){font-size:13px;color:var(--muted)}
+  tbody td:nth-child(3)::before{content:"From ";}
+  tbody td:nth-child(4){grid-row:3;grid-column:1;font-size:13px}
+  tbody td:nth-child(5){grid-row:2;grid-column:2;justify-self:end}
+  tbody td:nth-child(4) div{display:inline;margin-right:8px}
+}
+@media (max-width:420px){.tiles,.waves{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:no-preference){
+  .ring .arc{transition:stroke-dasharray .9s cubic-bezier(.2,.7,.2,1)}
+  .bar span{transition:width .7s cubic-bezier(.2,.7,.2,1)}
+}
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="wrap">
+    <div class="brand">
+      <span class="org">PROTEUS, INC.</span>
+      <span class="tag">FY2026 Audit Readiness &middot; Fiscal year ended June 30, 2026</span>
+    </div>
+    <div class="prep">
+      Prepared with <b>Martinez Accounting, Inc.</b><br>
+      <span class="upd"><span class="dot"></span><span id="updated">Loading&hellip;</span></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero" aria-labelledby="h-where">
+    <div>
+      <div class="kicker">Progress report</div>
+      <h1 id="h-where">Where we are</h1>
+      <p id="takeaway">Loading the latest status&hellip;</p>
+      <div class="next" id="next" hidden><span>Next up</span><span id="next-text"></span></div>
+    </div>
+    <div class="ring">
+      <svg viewBox="0 0 168 168" role="img" aria-labelledby="ring-t" id="ring">
+        <title id="ring-t">Share of requested documents in hand</title>
+        <circle cx="84" cy="84" r="68" fill="none" stroke="var(--track)" stroke-width="14"/>
+        <circle class="arc" id="arc-wa" cx="84" cy="84" r="68" fill="none" stroke="var(--gold)" stroke-width="14" stroke-dasharray="0 999" transform="rotate(-90 84 84)"/>
+        <circle class="arc" id="arc-ok" cx="84" cy="84" r="68" fill="none" stroke="var(--green)" stroke-width="14" stroke-dasharray="0 999" transform="rotate(-90 84 84)"/>
+        <text x="84" y="84" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="36" font-weight="600" fill="var(--ink)" id="ring-pct">&ndash;</text>
+        <text x="84" y="106" text-anchor="middle" font-family="Libre Franklin, Arial, sans-serif" font-size="11" fill="var(--muted)" letter-spacing="1">DOCUMENTS IN HAND</text>
+      </svg>
+      <div class="lg"><span><i style="background:var(--green)"></i>In full</span><span><i style="background:var(--gold)"></i>In part</span><span><i style="background:var(--track)"></i>To send</span></div>
+    </div>
+  </section>
+
+  <section class="tiles" aria-label="Headline figures">
+    <div class="tile" style="--c:var(--green)"><span class="lbl">Received in full</span><span class="big" id="k-rec">&ndash;</span><span class="sub" id="k-rec-s">&nbsp;</span></div>
+    <div class="tile" style="--c:var(--amber)"><span class="lbl">Partly received</span><span class="big" id="k-par">&ndash;</span><span class="sub">Some sent, more needed</span></div>
+    <div class="tile" style="--c:var(--blue)"><span class="lbl">Still to send</span><span class="big" id="k-out">&ndash;</span><span class="sub" id="k-out-s">&nbsp;</span></div>
+    <div class="tile" style="--c:var(--gold-d)"><span class="lbl">Days to submission</span><span class="big" id="k-days">&ndash;</span><span class="sub">Target: Monday, November 16</span></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-road">
+    <div class="sec-h"><h2 id="h-road">Road to the audit</h2><p>Key dates from kickoff through final deliverables. The gold line is today.</p></div>
+    <div class="card strip"><svg id="strip" role="img" aria-label="Timeline of key dates"></svg></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-waves">
+    <div class="sec-h"><h2 id="h-waves">Documents by due date</h2><p>The request is split into four waves so work can start on the first months of the year while the rest is gathered.</p></div>
+    <div class="waves" id="waves"></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-list">
+    <div class="sec-h"><h2 id="h-list">Document checklist</h2><p>Please upload to the shared &ldquo;01 Uploads from Proteus&rdquo; folder. If something does not exist or works differently at Proteus, a short note saying so is just as helpful.</p></div>
+    <div class="card">
+      <div class="tools">
+        <div class="seg" role="group" aria-label="Show">
+          <button type="button" id="f-open" aria-pressed="true">Still needed</button>
+          <button type="button" id="f-all" aria-pressed="false">All</button>
+          <button type="button" id="f-done" aria-pressed="false">Received</button>
+        </div>
+        <select id="f-who" aria-label="Who sends it"><option value="">Everyone</option></select>
+        <select id="f-wave" aria-label="Wave"><option value="">All waves</option></select>
+        <input id="f-q" type="search" placeholder="Search documents" aria-label="Search documents">
+        <span class="count" id="f-count"></span>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>#</th><th>Document</th><th>Who sends it</th><th>Due</th><th>Status</th><th class="hide-sm">Notes</th></tr></thead>
+          <tbody id="req"></tbody>
+        </table>
+        <div class="empty" id="req-empty" hidden>Nothing matches these filters.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="split">
+    <section class="sec" aria-labelledby="h-work">
+      <div class="sec-h"><h2 id="h-work">Our work</h2><p>What Martinez Accounting is building and what each piece is waiting on.</p></div>
+      <div class="card ws" id="work"></div>
+    </section>
+    <section class="sec" aria-labelledby="h-tl">
+      <div class="sec-h"><h2 id="h-tl">Timeline</h2><p>Every scheduled date, with the next one highlighted.</p></div>
+      <div class="card"><ol class="tl" id="tl"></ol></div>
+    </section>
+  </div>
+
+  <section class="sec" aria-labelledby="h-log">
+    <div class="sec-h"><h2 id="h-log">Recent updates</h2><p>What arrived and what changed, newest first.</p></div>
+    <div class="card log" id="log"></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>This page tracks documents and progress only and contains no financial results. Everything sent to Price Paige &amp; Company goes out from Proteus management.</span>
+    <span><b>Martinez Accounting, Inc.</b> &middot; 1004 F Street, Reedley, CA 93654 &middot; 559-743-7365</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const SUBMIT = '2026-11-16';
+  const NARROW_KEEP = ['2026-10-14', '2026-10-30', '2026-11-16', '2026-11-30'];
+  const $ = s => document.querySelector(s);
+  const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const DAY = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const short = s => { const d = parse(s); return MON[d.getMonth()] + ' ' + d.getDate(); };
+  const long = s => { const d = parse(s); return DAY[d.getDay()] + ', ' + MONL[d.getMonth()] + ' ' + d.getDate(); };
+  const days = (a, b) => Math.round((parse(b) - parse(a)) / 864e5);
+  const TODAY = ymd(new Date());
+  const chip = s => ({ 'Received': ['c-ok', 'Received'], 'Partial': ['c-wa', 'Partly received'], 'Done': ['c-ok', 'Done'], 'In progress': ['c-wa', 'In progress'], 'Not yet received': ['c-mu', 'Not yet received'] }[s] || ['c-mu', s]);
+  const mkChip = s => { const [c, t] = chip(s); return el('span', 'chip ' + c, t); };
+  const bar = (rec, part, total, cls) => { const b = el('div', 'bar' + (cls ? ' ' + cls : '')); const a = el('span', 'ok'); const w = el('span', 'wa'); a.style.width = total ? rec / total * 100 + '%' : '0'; w.style.width = total ? part / total * 100 + '%' : '0'; b.append(a, w); return b; };
+
+  const get = f => fetch('data/' + f + '?v=' + Date.now(), { cache: 'no-store' }).then(r => { if (!r.ok) throw new Error(f); return r.json(); });
+  Promise.all([get('requests.json'), get('milestones.json'), get('workstreams.json'), get('status.json')])
+    .then(([req, ms, ws, st]) => render(req, ms, ws, st))
+    .catch(() => { $('#takeaway').textContent = 'The latest status could not be loaded. Please refresh the page in a moment.'; $('#updated').textContent = 'Not loaded'; });
+
+  function render(req, ms, ws, st) {
+    // header stamp
+    if (st.updated_at) { const d = new Date(st.updated_at); $('#updated').textContent = 'Updated ' + MON[d.getMonth()] + ' ' + d.getDate() + ', ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); }
+
+    // summary
+    const total = req.length, rec = req.filter(r => r.status === 'Received').length, par = req.filter(r => r.status === 'Partial').length;
+    const open = req.filter(r => r.status !== 'Received'), out = total - rec - par;
+    const overdue = open.filter(r => r.due < TODAY).length;
+    const nextDue = open.map(r => r.due).filter(d => d >= TODAY).sort()[0];
+    const dueNext = nextDue ? open.filter(r => r.due === nextDue).length : 0;
+    const msSorted = ms.slice().sort((a, b) => a.date < b.date ? -1 : 1);
+    const nextMs = msSorted.find(m => m.date >= TODAY && m.status !== 'Done');
+    const toSubmit = Math.max(0, days(TODAY, SUBMIT));
+
+    $('#k-rec').innerHTML = ''; $('#k-rec').append(String(rec), el('small', null, ' / ' + total));
+    $('#k-rec-s').textContent = 'of ' + total + ' documents requested';
+    $('#k-par').textContent = par;
+    $('#k-out').textContent = out;
+    $('#k-out-s').textContent = overdue ? overdue + ' past due' : (nextDue ? dueNext + ' due ' + short(nextDue) : 'None past due');
+    if (overdue) $('#k-out-s').style.color = 'var(--maroon)';
+    $('#k-days').textContent = toSubmit;
+
+    const tk = $('#takeaway'); tk.textContent = '';
+    const b = t => el('b', null, t);
+    tk.append('Proteus has sent ', b(rec + ' of ' + total), ' requested documents in full and ', b(String(par)), ' in part. ');
+    if (overdue) tk.append(b(overdue + (overdue === 1 ? ' item is' : ' items are') + ' past due'), ' and holding up the next step of the work. ');
+    else if (nextDue) tk.append('The next ', b(String(dueNext)), ' items are due ', b(long(nextDue)), '. ');
+    tk.append('We are on track for the ', b(long(SUBMIT)), ' submission to Price Paige as long as documents keep arriving on schedule.');
+    if (nextMs) { $('#next').hidden = false; $('#next-text').textContent = short(nextMs.date) + ' · ' + nextMs.milestone; }
+
+    // ring
+    const C = 2 * Math.PI * 68;
+    requestAnimationFrame(() => {
+      $('#arc-ok').setAttribute('stroke-dasharray', (rec / total * C) + ' ' + C);
+      $('#arc-wa').setAttribute('stroke-dasharray', ((rec + par) / total * C) + ' ' + C);
+    });
+    $('#ring-pct').textContent = Math.round((rec + par) / total * 100) + '%';
+
+    // waves
+    const wv = {}; req.forEach(r => { const w = wv[r.wave] || (wv[r.wave] = { wave: r.wave, due: r.due, t: 0, r: 0, p: 0 }); w.t++; if (r.status === 'Received') w.r++; else if (r.status === 'Partial') w.p++; });
+    const wbox = $('#waves'); wbox.textContent = '';
+    Object.values(wv).sort((a, c) => a.due < c.due ? -1 : 1).forEach(w => {
+      const c = el('div', 'card wave');
+      const h = el('div', 'wh'); h.append(el('span', 'wn', w.wave), el('span', 'wd', 'Due ' + short(w.due)));
+      const f = el('div', 'frac'); f.append(String(w.r + w.p), el('small', null, ' of ' + w.t + ' in hand'));
+      const late = w.due < TODAY && w.r < w.t;
+      const cnt = el('div', 'cnt', w.r + ' in full · ' + w.p + ' in part · ' + (w.t - w.r - w.p) + ' to send' + (late ? ' · past due' : ''));
+      if (late) cnt.style.color = 'var(--maroon)';
+      c.append(h, f, bar(w.r, w.p, w.t), cnt); wbox.appendChild(c);
+    });
+
+    // checklist
+    const tb = $('#req'); tb.textContent = '';
+    const whos = new Set(), waves = new Set();
+    req.slice().sort((a, c) => a.due < c.due ? -1 : a.due > c.due ? 1 : a.no - c.no).forEach(r => {
+      String(r.who).split(' or ').forEach(x => whos.add(x)); waves.add(r.wave);
+      const tr = el('tr'); tr.dataset.status = r.status; tr.dataset.who = r.who; tr.dataset.wave = r.wave;
+      if (r.status === 'Received') tr.className = 'done';
+      tr.appendChild(el('td', 'n', String(r.no)));
+      const t = el('td'); t.append(el('span', 'it', r.item), el('span', 'dt', r.detail + (r.format ? ' Format: ' + r.format + '.' : ''))); tr.appendChild(t);
+      tr.appendChild(el('td', 'nw', r.who));
+      const dd = el('td', 'nw'); dd.appendChild(el('div', null, short(r.due)));
+      if (r.status !== 'Received') { const n = days(TODAY, r.due); const w = el('div', 'when' + (n < 0 ? ' bad' : n <= 2 ? ' soon' : ''), n < 0 ? (-n) + (n === -1 ? ' day' : ' days') + ' late' : n === 0 ? 'Due today' : n === 1 ? 'Tomorrow' : 'In ' + n + ' days'); dd.appendChild(w); }
+      else if (r.received) dd.appendChild(el('div', 'when', 'Received ' + short(r.received)));
+      tr.appendChild(dd);
+      const s = el('td'); s.appendChild(mkChip(r.status)); tr.appendChild(s);
+      tr.appendChild(el('td', 'note hide-sm', r.note || ''));
+      tb.appendChild(tr);
+    });
+    const fill = (sel, vals) => vals.forEach(v => { const o = el('option', null, v); o.value = v; sel.appendChild(o); });
+    fill($('#f-who'), [...whos].sort()); fill($('#f-wave'), [...waves].sort());
+    filter();
+
+    // work
+    const wk = $('#work'); wk.textContent = '';
+    ws.forEach(w => {
+      const r = el('div', 'wrow');
+      r.append(el('div', 't', w.workstream), mkChip(w.status));
+      r.appendChild(el('div', 'p', w.purpose + (w.next && w.next !== '—' ? ' Next: ' + w.next + '.' : '') + ' Due ' + short(w.due) + '.'));
+      const pr = el('div', 'pr'); const bb = el('div', 'bar'); const sp = el('span', w.done >= w.total ? 'ok' : 'wa'); sp.style.width = (w.total ? w.done / w.total * 100 : 0) + '%'; bb.appendChild(sp);
+      pr.append(bb, el('small', null, w.done + ' of ' + w.total + ' ' + w.unit)); r.appendChild(pr);
+      wk.appendChild(r);
+    });
+
+    // timeline list
+    const tl = $('#tl'); tl.textContent = '';
+    msSorted.forEach(m => {
+      const li = el('li', [m.status === 'Done' || m.date < TODAY ? 'done' : '', nextMs && m.date === nextMs.date ? 'next' : '', m.major ? 'major' : ''].join(' ').trim());
+      const x = el('div', 'x', m.milestone); x.appendChild(el('span', 'w', m.who));
+      li.append(el('span', 'd', short(m.date)), el('span', 'm'), x); tl.appendChild(li);
+    });
+
+    // log
+    const lg = $('#log'); lg.textContent = '';
+    (st.log || []).slice().sort((a, c) => a.date < c.date ? 1 : -1).forEach(e => { const d = el('div'); d.append(el('b', null, short(e.date)), el('span', null, e.text)); lg.appendChild(d); });
+    if (!lg.children.length) lg.appendChild(el('span', null, 'No updates yet.'));
+
+    // strip
+    drawStrip(msSorted);
+    let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => drawStrip(msSorted), 120); });
+  }
+
+  const state = { show: 'open', who: '', wave: '', q: '' };
+  const segs = { open: $('#f-open'), all: $('#f-all'), done: $('#f-done') };
+  Object.entries(segs).forEach(([k, btn]) => btn.addEventListener('click', () => { state.show = k; Object.entries(segs).forEach(([k2, b2]) => b2.setAttribute('aria-pressed', String(k2 === k))); filter(); }));
+  $('#f-who').addEventListener('change', e => { state.who = e.target.value; filter(); });
+  $('#f-wave').addEventListener('change', e => { state.wave = e.target.value; filter(); });
+  $('#f-q').addEventListener('input', e => { state.q = e.target.value.trim().toLowerCase(); filter(); });
+  function filter() {
+    let n = 0;
+    document.querySelectorAll('#req tr').forEach(tr => {
+      const s = tr.dataset.status;
+      let ok = state.show === 'all' || (state.show === 'open' ? s !== 'Received' : s === 'Received');
+      if (ok && state.who) ok = tr.dataset.who.split(' or ').includes(state.who);
+      if (ok && state.wave) ok = tr.dataset.wave === state.wave;
+      if (ok && state.q) ok = tr.textContent.toLowerCase().includes(state.q);
+      tr.hidden = !ok; if (ok) n++;
+    });
+    $('#f-count').textContent = n + (n === 1 ? ' document' : ' documents');
+    $('#req-empty').hidden = n > 0;
+  }
+
+  function drawStrip(ms) {
+    const svg = $('#strip'); const W = Math.max(300, svg.parentNode.clientWidth - 36);
+    const narrow = W < 640, H = narrow ? 168 : 150, y = narrow ? 92 : 84, padL = 34, padR = 44;
+    const ns = 'http://www.w3.org/2000/svg';
+    const mk = (t, a) => { const e = document.createElementNS(ns, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.textContent = '';
+    const t0 = parse(ms[0].date), t1 = parse(ms[ms.length - 1].date);
+    const x = s => padL + (parse(s) - t0) / (t1 - t0) * (W - padL - padR);
+    svg.appendChild(mk('line', { x1: padL, x2: W - padR, y1: y, y2: y, stroke: 'var(--track)', 'stroke-width': 6, 'stroke-linecap': 'round' }));
+    const tx = Math.min(Math.max(x(TODAY), padL), W - padR);
+    if (TODAY >= ms[0].date) svg.appendChild(mk('line', { x1: padL, x2: tx, y1: y, y2: y, stroke: 'var(--green)', 'stroke-width': 6, 'stroke-linecap': 'round' }));
+    // month ticks
+    for (let d = new Date(t0.getFullYear(), t0.getMonth() + 1, 1); d <= t1; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)) {
+      const xx = x(ymd(d));
+      svg.appendChild(mk('line', { x1: xx, x2: xx, y1: y - 12, y2: y + 12, stroke: 'var(--line)', 'stroke-width': 1 }));
+      const lb = mk('text', { x: xx + 4, y: H - 4, 'font-size': 10, fill: 'var(--muted)', 'font-family': 'Libre Franklin, Arial, sans-serif', 'letter-spacing': 1 }); lb.textContent = MONL[d.getMonth()].toUpperCase(); svg.appendChild(lb);
+    }
+    const majors = ms.filter(m => m.major && (!narrow || NARROW_KEEP.includes(m.date)));
+    let up = true;
+    ms.forEach(m => {
+      const done = m.status === 'Done' || m.date < TODAY, xx = x(m.date);
+      const isSubmit = m.date === SUBMIT;
+      svg.appendChild(mk('circle', { cx: xx, cy: y, r: m.major ? (isSubmit ? 8 : 6) : 3.5, fill: done ? 'var(--green)' : (isSubmit ? 'var(--navy)' : 'var(--panel)'), stroke: done ? 'var(--green)' : (isSubmit ? 'var(--gold)' : 'var(--blue)'), 'stroke-width': m.major ? 2.5 : 1.5 }));
+    });
+    majors.forEach((m, i) => {
+      const xx = x(m.date), above = i % 2 === 0;
+      const ly = above ? y - 20 : y + 30;
+      const anchor = xx < padL + 40 ? 'start' : xx > W - padR - 40 ? 'end' : 'middle';
+      const g = mk('g', {});
+      const d1 = mk('text', { x: xx, y: above ? ly - 13 : ly, 'text-anchor': anchor, 'font-size': 10, 'font-weight': 700, fill: 'var(--muted)', 'font-family': 'Libre Franklin, Arial, sans-serif' }); d1.textContent = short(m.date).toUpperCase();
+      const d2 = mk('text', { x: xx, y: above ? ly : ly + 13, 'text-anchor': anchor, 'font-size': narrow ? 10.5 : 12, 'font-weight': 600, fill: m.date === SUBMIT ? 'var(--blue)' : 'var(--ink)', 'font-family': 'Libre Franklin, Arial, sans-serif' }); d2.textContent = m.short;
+      g.append(d1, d2); svg.appendChild(g);
+    });
+    if (TODAY >= ms[0].date && TODAY <= ms[ms.length - 1].date) {
+      svg.appendChild(mk('line', { x1: tx, x2: tx, y1: y - 62, y2: y + 46, stroke: 'var(--gold)', 'stroke-width': 2 }));
+      const r = mk('rect', { x: tx - 22, y: y - 78, width: 44, height: 16, rx: 8, fill: 'var(--gold)' }); svg.appendChild(r);
+      const tt = mk('text', { x: tx, y: y - 66.5, 'text-anchor': 'middle', 'font-size': 9.5, 'font-weight': 700, fill: '#0F2A47', 'font-family': 'Libre Franklin, Arial, sans-serif', 'letter-spacing': .8 }); tt.textContent = 'TODAY'; svg.appendChild(tt);
+    }
+  }
+})();
+</script>
+</body>
+</html>
