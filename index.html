@@ -384,7 +384,7 @@ footer b{color:var(--ink)}
         const tr = el('tr'); tr.dataset.cov = i.coverage; tr.dataset.who = i.who; tr.dataset.grp = t;
         const c1 = el('td'); c1.append(el('span', 'it', i.request));
         let d = i.description;
-        if (i.coverage === 'Covered') d += ' Comes out of checklist item ' + (i.our_items || []).map(n => '#' + n).join(' and ') + '.';
+        if (i.coverage === 'Covered' && (i.our_items || []).length) d += ' Comes out of checklist item ' + (i.our_items || []).map(n => '#' + n).join(' and ') + '.';
         if (i.coverage === 'Partly covered') d += ' Checklist item ' + (i.our_items || []).map(n => '#' + n).join(' and ') + ' covers part of this; Proteus adds the rest.';
         if (i.note) d += ' ' + i.note;
         c1.append(el('span', 'dt', d)); tr.appendChild(c1);
