@@ -303,8 +303,21 @@ footer b{color:var(--ink)}
   const mkChip = s => { const [c, t] = chip(s); return el('span', 'chip ' + c, t); };
   const bar = (rec, part, total, cls) => { const b = el('div', 'bar' + (cls ? ' ' + cls : '')); const a = el('span', 'ok'); const w = el('span', 'wa'); a.style.width = total ? rec / total * 100 + '%' : '0'; w.style.width = total ? part / total * 100 + '%' : '0'; b.append(a, w); return b; };
 
+  // Live data: read-only Supabase tables (public read, writes only by Martinez Accounting).
+  const SB = 'https://tukacdztkyraxzavsvpk.supabase.co/rest/v1/';
+  const KEY = 'sb_publishable_xx55_rU-F_SxbHgx7PisVw_PPoXDMZ_';
+  const sb = path => fetch(SB + path, { cache: 'no-store', headers: { apikey: KEY } }).then(r => { if (!r.ok) throw new Error(path); return r.json(); });
+  const live = () => Promise.all([
+    sb('requests?select=*&order=no'),
+    sb('milestones?select=*&order=date'),
+    sb('workstreams?select=*&order=sort'),
+    sb('site_status?select=*&id=eq.1'),
+    sb('update_log?select=date,text&order=created_at.desc&limit=30')
+  ]).then(([req, ms, ws, st, log]) => [req.map(r => Object.assign({}, r, { received: r.received || '', note: r.note || '' })), ms, ws, Object.assign({}, st[0] || {}, { log })]);
+  // Fallback: the snapshot files in /data if the live source is unreachable.
   const get = f => fetch('data/' + f + '?v=' + Date.now(), { cache: 'no-store' }).then(r => { if (!r.ok) throw new Error(f); return r.json(); });
-  Promise.all([get('requests.json'), get('milestones.json'), get('workstreams.json'), get('status.json')])
+  const snapshot = () => Promise.all([get('requests.json'), get('milestones.json'), get('workstreams.json'), get('status.json')]);
+  live().catch(snapshot)
     .then(([req, ms, ws, st]) => render(req, ms, ws, st))
     .catch(() => { $('#takeaway').textContent = 'The latest status could not be loaded. Please refresh the page in a moment.'; $('#updated').textContent = 'Not loaded'; });
 

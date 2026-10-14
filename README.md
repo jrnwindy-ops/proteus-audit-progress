@@ -2,7 +2,9 @@
 
 Shared progress page for Proteus, Inc. and Martinez Accounting, Inc. It shows which requested documents have been received, the status of each piece of work, and the timeline to the November 16, 2026 submission to Price Paige & Company.
 
-The page is static: `index.html` reads the four files in `data/`. Netlify publishes the repository root on every push to `main`; there is no build step.
+The page is static. `index.html` reads live data from the Supabase project "Proteus DB" (tables `requests`, `milestones`, `workstreams`, `update_log`, `site_status`; public read only, writes only through Martinez Accounting's Supabase access). If Supabase is unreachable it falls back to the snapshot files in `data/`. Netlify publishes the repository root on every push to `main`; there is no build step.
+
+Status changes are made in Supabase, not in this repo, so they appear on the page immediately without a deploy.
 
 ## Data files
 
