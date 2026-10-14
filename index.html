@@ -121,6 +121,16 @@ tr.done td{opacity:.72}
 .c-ok{background:var(--ok-bg);color:var(--green)}.c-wa{background:var(--warn-bg);color:var(--amber)}
 .c-bad{background:var(--bad-bg);color:var(--maroon)}.c-mu{background:var(--mute-bg);color:var(--muted)}
 .when{font-size:12px;color:var(--muted)}.when.bad{color:var(--maroon);font-weight:700}.when.soon{color:var(--amber);font-weight:600}
+.pbc-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 20px;padding:18px}
+.pbc-k{display:flex;flex-direction:column;gap:2px}
+.pbc-k .big{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.pbc-k .lbl{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.pbc-k:nth-child(1) .big{color:var(--green)}.pbc-k:nth-child(2) .big{color:var(--amber)}.pbc-k:nth-child(3) .big{color:var(--blue)}
+.pbc-bar{grid-column:1/-1;display:flex;height:8px;border-radius:999px;overflow:hidden;background:var(--track)}
+.pbc-bar span{display:block;height:100%}.pbc-bar .ok{background:var(--green)}.pbc-bar .wa{background:var(--gold)}.pbc-bar .mu{background:var(--track)}
+tr.grp td{background:var(--soft);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);padding:8px 12px}
+tr.grp:hover td{background:var(--soft)}
+@media (max-width:620px){.pbc-sum{grid-template-columns:repeat(2,minmax(0,1fr))} tr.grp{display:block} tr.grp td{display:block}}
 .empty{padding:28px;text-align:center;color:var(--muted);font-size:14px}
 
 /* work + timeline */
@@ -260,6 +270,34 @@ footer b{color:var(--ink)}
     </div>
   </section>
 
+  <section class="sec" aria-labelledby="h-pbc" id="pbc-sec">
+    <div class="sec-h"><h2 id="h-pbc">Price Paige&rsquo;s request list</h2><p>The auditors&rsquo; own list, based on what they asked for last year. Much of it comes out of the work above. The rest is for Proteus to gather directly and send through Suralink, starting with the easy permanent-file items.</p></div>
+    <div class="pbc-sum card" id="pbc-sum">
+      <div class="pbc-k"><span class="big" id="pbc-cov">&ndash;</span><span class="lbl">Covered by our work</span></div>
+      <div class="pbc-k"><span class="big" id="pbc-part">&ndash;</span><span class="lbl">Partly covered</span></div>
+      <div class="pbc-k"><span class="big" id="pbc-own">&ndash;</span><span class="lbl">For Proteus to prepare</span></div>
+      <div class="pbc-k"><span class="big" id="pbc-ready">&ndash;</span><span class="lbl">Ready or sent</span></div>
+      <div class="pbc-bar" id="pbc-bar"></div>
+    </div>
+    <div class="card">
+      <div class="tools">
+        <div class="seg" role="group" aria-label="Show">
+          <button type="button" id="p-own" aria-pressed="true">For Proteus</button>
+          <button type="button" id="p-all" aria-pressed="false">Full list</button>
+        </div>
+        <select id="p-who" aria-label="Who prepares it"><option value="">Everyone</option></select>
+        <span class="count" id="p-count"></span>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Item</th><th>Who</th><th>Ready by</th><th>Status</th></tr></thead>
+          <tbody id="pbc"></tbody>
+        </table>
+        <div class="empty" id="pbc-empty" hidden>Price Paige&rsquo;s list is loading.</div>
+      </div>
+    </div>
+  </section>
+
   <div class="split">
     <section class="sec" aria-labelledby="h-work">
       <div class="sec-h"><h2 id="h-work">Our work</h2><p>What Martinez Accounting is building and what each piece is waiting on.</p></div>
@@ -320,6 +358,61 @@ footer b{color:var(--ink)}
   live().catch(snapshot)
     .then(([req, ms, ws, st]) => render(req, ms, ws, st))
     .catch(() => { $('#takeaway').textContent = 'The latest status could not be loaded. Please refresh the page in a moment.'; $('#updated').textContent = 'Not loaded'; });
+
+  // Price Paige's request list (loaded on its own so the rest of the page never waits on it)
+  const pstate = { show: 'own', who: '' };
+  sb('pbc_items?select=*&order=no').catch(() => get('pbc.json')).then(renderPbc).catch(() => { $('#pbc-sec').hidden = true; });
+  function renderPbc(items) {
+    const cov = items.filter(i => i.coverage === 'Covered').length;
+    const part = items.filter(i => i.coverage === 'Partly covered').length;
+    const ownItems = items.filter(i => i.coverage !== 'Covered');
+    const own = items.filter(i => i.coverage === 'Proteus').length;
+    const done = ownItems.filter(i => i.status === 'Ready' || i.status === 'Sent to Price Paige').length;
+    $('#pbc-cov').textContent = cov; $('#pbc-part').textContent = part; $('#pbc-own').textContent = own;
+    $('#pbc-ready').textContent = done + ' of ' + ownItems.length;
+    const pb = $('#pbc-bar'); pb.textContent = '';
+    [['ok', cov], ['wa', part], ['mu', own]].forEach(([c, n]) => { const s = el('span', c); s.style.width = (n / items.length * 100) + '%'; s.title = n; pb.appendChild(s); });
+    const tb = $('#pbc'); tb.textContent = '';
+    const groups = [['2026-11-16', 'With the November 16 submission'], ['2026-12-15', 'By mid-December, before fieldwork'], ['2027-01-08', 'After the December 2026 close']];
+    const whos = new Set();
+    groups.forEach(([t, label]) => {
+      const rows = items.filter(i => i.target === t);
+      if (!rows.length) return;
+      const g = el('tr', 'grp'); g.dataset.grp = t; const gc = el('td', null, label); gc.colSpan = 4; g.appendChild(gc); tb.appendChild(g);
+      rows.forEach(i => {
+        String(i.who).split(' and ').forEach(w => whos.add(w));
+        const tr = el('tr'); tr.dataset.cov = i.coverage; tr.dataset.who = i.who; tr.dataset.grp = t;
+        const c1 = el('td'); c1.append(el('span', 'it', i.request));
+        let d = i.description;
+        if (i.coverage === 'Covered') d += ' Comes out of checklist item ' + (i.our_items || []).map(n => '#' + n).join(' and ') + '.';
+        if (i.coverage === 'Partly covered') d += ' Checklist item ' + (i.our_items || []).map(n => '#' + n).join(' and ') + ' covers part of this; Proteus adds the rest.';
+        if (i.note) d += ' ' + i.note;
+        c1.append(el('span', 'dt', d)); tr.appendChild(c1);
+        tr.appendChild(el('td', 'nw', i.coverage === 'Covered' && i.who === 'Martinez' ? 'Martinez' : i.who));
+        tr.appendChild(el('td', 'nw', short(i.target)));
+        const s = el('td');
+        if (i.coverage === 'Covered') s.appendChild(el('span', 'chip c-ok', 'Covered by our work'));
+        else s.appendChild(el('span', 'chip ' + ({ 'Ready': 'c-ok', 'Sent to Price Paige': 'c-ok', 'In progress': 'c-wa' }[i.status] || 'c-mu'), i.status));
+        tr.appendChild(s); tb.appendChild(tr);
+      });
+    });
+    const sel = $('#p-who'); [...whos].sort().forEach(v => { const o = el('option', null, v); o.value = v; sel.appendChild(o); });
+    pfilter();
+  }
+  function pfilter() {
+    let n = 0; const shownGrp = new Set();
+    document.querySelectorAll('#pbc tr:not(.grp)').forEach(tr => {
+      let ok = pstate.show === 'all' || tr.dataset.cov !== 'Covered';
+      if (ok && pstate.who) ok = tr.dataset.who.split(' and ').includes(pstate.who);
+      tr.hidden = !ok; if (ok) { n++; shownGrp.add(tr.dataset.grp); }
+    });
+    document.querySelectorAll('#pbc tr.grp').forEach(g => { g.hidden = !shownGrp.has(g.dataset.grp); });
+    $('#p-count').textContent = n + (n === 1 ? ' item' : ' items');
+    $('#pbc-empty').hidden = n > 0; $('#pbc-empty').textContent = 'Nothing matches these filters.';
+  }
+  const psegs = { own: $('#p-own'), all: $('#p-all') };
+  Object.entries(psegs).forEach(([k, b]) => b.addEventListener('click', () => { pstate.show = k; Object.entries(psegs).forEach(([k2, b2]) => b2.setAttribute('aria-pressed', String(k2 === k))); pfilter(); }));
+  $('#p-who').addEventListener('change', e => { pstate.who = e.target.value; pfilter(); });
 
   function render(req, ms, ws, st) {
     // header stamp
