@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Proteus Open Questions</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0F2A47">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Same house look as the progress page: navy masthead, gold rule, one column of cards. */
+:root{
+  --navy:#0F2A47; --blue:#09468F; --teal:#0E7D99; --gold:#F5B81F; --gold-d:#C8901A;
+  --green:#2E7D5B; --amber:#B7791F; --maroon:#9A3A43;
+  --bg:#F3F6FA; --panel:#FFFFFF; --ink:#0F2A47; --muted:#5B7390; --line:#DBE6F1; --soft:#EAF2FA;
+  --ok-bg:#E3F2EA; --warn-bg:#FBF1DA; --bad-bg:#F6E3E5; --mute-bg:#EEF2F7; --new-bg:#FFF6DB;
+  --shadow:0 1px 2px rgba(15,42,71,.06),0 4px 16px rgba(15,42,71,.05);
+  --serif:"Source Serif 4",Georgia,serif; --sans:"Libre Franklin",-apple-system,"Segoe UI",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --blue:#7FB2EE; --teal:#5CC3DD; --green:#5FBF8F; --amber:#E6B44C; --maroon:#E58A93;
+  --bg:#0B1624; --panel:#122236; --ink:#E6EDF5; --muted:#9AB0C8; --line:#22374F; --soft:#173049;
+  --ok-bg:#163A2B; --warn-bg:#3A2F14; --bad-bg:#3D1F24; --mute-bg:#1A2B40; --new-bg:#3A3214;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --blue:#7FB2EE; --teal:#5CC3DD; --green:#5FBF8F; --amber:#E6B44C; --maroon:#E58A93;
+  --bg:#0B1624; --panel:#122236; --ink:#E6EDF5; --muted:#9AB0C8; --line:#22374F; --soft:#173049;
+  --ok-bg:#163A2B; --warn-bg:#3A2F14; --bad-bg:#3D1F24; --mute-bg:#1A2B40; --new-bg:#3A3214; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+.wrap{max-width:980px;margin-inline:auto;padding-inline:16px}
+.mast{background:var(--navy);color:#fff;border-bottom:4px solid var(--gold);padding-top:env(safe-area-inset-top,0px)}
+.mast .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 20px;padding-block:16px}
+.org{font-weight:700;letter-spacing:.32em;font-size:15px}
+.tag{font-size:12px;color:#B9C8DA;letter-spacing:.04em}
+.who{font-size:12px;color:#B9C8DA;text-align:right}
+.who b{color:#fff;font-weight:600}
+.who button{margin-left:8px}
+main.wrap{display:flex;flex-direction:column;gap:20px;padding-block:24px 48px}
+h1{font-family:var(--serif);font-weight:600;font-size:30px;margin:0 0 6px}
+.lede{color:var(--muted);margin:0;max-width:70ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.login{max-width:420px;padding:24px;display:flex;flex-direction:column;gap:12px}
+label{font-size:13px;font-weight:600;color:var(--muted)}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+textarea{min-height:84px;resize:vertical}
+button{font:inherit;font-weight:600;font-size:14px;border-radius:8px;padding:8px 14px;border:1px solid var(--blue);background:var(--blue);color:#fff;cursor:pointer}
+button.ghost{background:transparent;color:var(--blue)}
+.mast button.ghost{color:#fff;border-color:#B9C8DA;padding:4px 10px;font-size:12px}
+button:disabled{opacity:.55;cursor:default}
+.err{color:var(--maroon);font-size:13px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tile{padding:14px 16px;border-top:4px solid var(--c)}
+.tile .big{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1.1;display:block}
+.tile .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;color:var(--ink);font-weight:500;padding:7px 12px}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.bar input{max-width:240px}
+.count{font-size:13px;color:var(--muted);margin-left:auto}
+.sec-h{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin:8px 0 -6px}
+.q{padding:16px 18px}
+.q.new{box-shadow:inset 4px 0 0 var(--gold),var(--shadow)}
+.q-top{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.q-no{font-family:var(--serif);font-weight:600;color:var(--gold-d);font-size:20px;min-width:30px}
+.q-title{font-weight:600;font-size:16px;flex:1}
+.q-meta{font-size:12.5px;color:var(--muted);margin-top:2px;font-weight:400}
+.pill{font-size:11.5px;font-weight:700;letter-spacing:.04em;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.s-Open{background:var(--mute-bg);color:var(--ink)}
+.s-Answered{background:var(--ok-bg);color:var(--green)}
+.s-Need{background:var(--warn-bg);color:var(--amber)}
+.s-Resolved{background:var(--soft);color:var(--blue)}
+.newtag{background:var(--new-bg);color:var(--gold-d)}
+.hidtag{background:var(--bad-bg);color:var(--maroon)}
+.q-body{margin-top:12px;padding-left:40px;display:flex;flex-direction:column;gap:10px}
+.q-body p{margin:0}
+.k{font-weight:700;color:var(--teal)}
+.thread{border-left:2px solid var(--line);padding-left:14px;display:flex;flex-direction:column;gap:10px}
+.ev .h{font-size:12.5px;color:var(--muted)}
+.ev .h b{color:var(--ink)}
+.ev .t{white-space:pre-wrap}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.add{padding:18px;display:flex;flex-direction:column;gap:10px}
+.add .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+footer{color:var(--muted);font-size:12px;text-align:center;padding-bottom:32px}
+@media (max-width:640px){
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .q-body{padding-left:0}
+  .bar input{max-width:none;flex:1 1 100%}
+  .count{margin-left:0}
+  .add .row{grid-template-columns:1fr}
+  h1{font-size:26px}
+}
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="wrap">
+    <div><div class="org">PROTEUS, INC.</div><div class="tag">Open questions &nbsp;|&nbsp; Prepared by Martinez Accounting, Inc.</div></div>
+    <div class="who" id="who" hidden><span>Signed in as <b id="who-name"></b></span><button class="ghost" id="signout" type="button">Sign out</button></div>
+  </div>
+</header>
+<main class="wrap">
+  <section id="login-view" hidden>
+    <h1>Open questions</h1>
+    <p class="lede" style="margin-bottom:16px">This page is private. Please sign in with the email and password Martinez Accounting gave you.</p>
+    <form class="card login" id="login-form">
+      <div><label for="em">Email</label><input id="em" type="email" autocomplete="username" required></div>
+      <div><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
+      <button type="submit" id="login-btn">Sign in</button>
+      <div class="err" id="login-err" hidden></div>
+    </form>
+  </section>
+
+  <section id="app" hidden>
+    <div>
+      <h1>Open questions</h1>
+      <p class="lede">Questions from our review of Proteus&rsquo;s records for the year ended June 30, 2026. Answer right on the page; every answer is saved with the date and kept as a record. If a question is better handled by phone, choose &ldquo;Need to talk&rdquo; and we will call. Figures come from Proteus&rsquo;s unaudited records.</p>
+    </div>
+    <div class="tiles" style="margin-top:16px">
+      <div class="card tile" style="--c:var(--muted)"><span class="lbl">Open</span><span class="big" id="t-open">&ndash;</span></div>
+      <div class="card tile" style="--c:var(--green)"><span class="lbl">Answered</span><span class="big" id="t-ans">&ndash;</span></div>
+      <div class="card tile" style="--c:var(--amber)"><span class="lbl">Need to talk</span><span class="big" id="t-talk">&ndash;</span></div>
+      <div class="card tile" style="--c:var(--blue)"><span class="lbl">Resolved</span><span class="big" id="t-res">&ndash;</span></div>
+    </div>
+    <div class="bar" style="margin-top:16px">
+      <div class="seg" role="group" aria-label="Filter by status">
+        <button type="button" data-f="active" aria-pressed="true">Needs attention</button>
+        <button type="button" data-f="all" aria-pressed="false">All</button>
+        <button type="button" data-f="Resolved" aria-pressed="false">Resolved</button>
+      </div>
+      <input id="q" type="search" placeholder="Search questions" aria-label="Search questions">
+      <span class="count" id="count"></span>
+    </div>
+    <div id="list" style="display:flex;flex-direction:column;gap:12px;margin-top:16px"></div>
+
+    <form class="card add" id="add-form" hidden>
+      <div class="sec-h" style="margin:0">Add a question (Martinez only)</div>
+      <div class="row">
+        <div><label for="a-sec">Section</label><input id="a-sec" list="secs" required></div>
+        <div><label for="a-title">Short title</label><input id="a-title" required></div>
+      </div>
+      <datalist id="secs"></datalist>
+      <div><label for="a-found">What we found</label><textarea id="a-found" required></textarea></div>
+      <div><label for="a-need">What we need</label><textarea id="a-need" required></textarea></div>
+      <div class="row">
+        <div><label for="a-who">Who is best placed</label><input id="a-who" value="Brenda"></div>
+        <div><label for="a-due">Target</label><input id="a-due" placeholder="by Wednesday, October 21"></div>
+      </div>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" id="a-vis" style="width:auto"> Show to Proteus now</label>
+      <div class="actions"><button type="submit">Add question</button><span class="err" id="add-err" hidden></span></div>
+    </form>
+  </section>
+</main>
+<footer>Proteus, Inc. &nbsp;|&nbsp; Confidential &nbsp;|&nbsp; Martinez Accounting, Inc. &nbsp;|&nbsp; 559-743-7365</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const sb = supabase.createClient('https://tukacdztkyraxzavsvpk.supabase.co','sb_publishable_xx55_rU-F_SxbHgx7PisVw_PPoXDMZ_');
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = d => new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+let me = null, qs = [], evs = [], filter = 'active', open = new Set(), lastSeen = 0;
+const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
+
+async function boot(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if (!session) return showLogin();
+  const email = session.user.email.toLowerCase();
+  const { data: u } = await sb.from('q_users').select('*').eq('email', email).maybeSingle();
+  if (!u) { await sb.auth.signOut(); return showLogin('This account does not have access to the questions page.'); }
+  me = u;
+  $('who-name').textContent = u.name; $('who').hidden = false;
+  $('login-view').hidden = true; $('app').hidden = false;
+  $('add-form').hidden = me.role !== 'martinez';
+  lastSeen = Number(store.get('q-seen-' + email) || 0);
+  await load();
+  store.set('q-seen-' + email, String(Date.now()));
+  sb.channel('q').on('postgres_changes',{event:'*',schema:'public',table:'question_events'},load)
+    .on('postgres_changes',{event:'*',schema:'public',table:'questions'},load).subscribe();
+  setInterval(load, 60000);
+}
+function showLogin(msg){
+  $('app').hidden = true; $('who').hidden = true; $('login-view').hidden = false;
+  if (msg){ $('login-err').textContent = msg; $('login-err').hidden = false; }
+}
+$('login-form').addEventListener('submit', async e => {
+  e.preventDefault(); $('login-btn').disabled = true; $('login-err').hidden = true;
+  const { error } = await sb.auth.signInWithPassword({ email: $('em').value.trim(), password: $('pw').value });
+  $('login-btn').disabled = false;
+  if (error) { $('login-err').textContent = 'That email and password did not match. Please try again.'; $('login-err').hidden = false; return; }
+  boot();
+});
+$('signout').addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); });
+
+async function load(){
+  const [a, b] = await Promise.all([
+    sb.from('questions').select('*').order('no'),
+    sb.from('question_events').select('*').order('created_at')
+  ]);
+  if (a.error || b.error) return;
+  qs = a.data; evs = b.data; render();
+}
+function isNew(q){
+  if (!lastSeen) return false;
+  const t = new Date(q.created_at).getTime();
+  const lastOther = evs.filter(e => e.question_id === q.id && e.author_email !== me.email).map(e => new Date(e.created_at).getTime());
+  return t > lastSeen || lastOther.some(x => x > lastSeen);
+}
+function pill(s){ return `<span class="pill s-${s.split(' ')[0]}">${esc(s)}</span>`; }
+function render(){
+  const c = s => qs.filter(q => q.status === s).length;
+  $('t-open').textContent = c('Open'); $('t-ans').textContent = c('Answered');
+  $('t-talk').textContent = c('Need to talk'); $('t-res').textContent = c('Resolved');
+  const term = $('q').value.trim().toLowerCase();
+  const shown = qs.filter(q => (filter === 'all' || (filter === 'active' ? q.status !== 'Resolved' : q.status === filter))
+    && (!term || (q.title + ' ' + q.found + ' ' + q.need + ' ' + q.section).toLowerCase().includes(term)));
+  $('count').textContent = shown.length + ' of ' + qs.length;
+  $('secs').innerHTML = [...new Set(qs.map(q => q.section))].map(s => `<option value="${esc(s)}">`).join('');
+  let html = '', sec = '';
+  for (const q of shown){
+    if (q.section !== sec){ sec = q.section; html += `<div class="sec-h">${esc(sec)}</div>`; }
+    const nw = isNew(q), ex = open.has(q.id);
+    const th = evs.filter(e => e.question_id === q.id);
+    html += `<article class="card q ${nw ? 'new' : ''}" data-id="${q.id}">
+      <div class="q-top" data-toggle="${q.id}" role="button" tabindex="0" aria-expanded="${ex}">
+        <span class="q-no">${q.no}</span>
+        <div class="q-title">${esc(q.title)}<div class="q-meta">${esc(q.who || '')}${q.due ? ' &middot; ' + esc(q.due) : ''}${th.length ? ' &middot; ' + th.length + ' update' + (th.length > 1 ? 's' : '') : ''}</div></div>
+        ${nw ? '<span class="pill newtag">New</span>' : ''}${!q.visible ? '<span class="pill hidtag">Hidden</span>' : ''}${pill(q.status)}
+      </div>
+      ${ex ? body(q, th) : ''}
+    </article>`;
+  }
+  $('list').innerHTML = html || '<div class="card q" style="color:var(--muted)">Nothing here right now.</div>';
+}
+function body(q, th){
+  const mart = me.role === 'martinez';
+  return `<div class="q-body">
+    <p><span class="k">What we found: </span>${esc(q.found)}</p>
+    <p><span class="k">What we need: </span>${esc(q.need)}</p>
+    ${th.length ? `<div class="thread">${th.map(e => `<div class="ev"><div class="h"><b>${esc(e.author_name || e.author_email)}</b> &middot; ${fmt(e.created_at)}${e.new_status ? ' &middot; marked ' + esc(e.new_status) : ''}</div>${e.body ? `<div class="t">${esc(e.body)}</div>` : ''}</div>`).join('')}</div>` : ''}
+    <textarea id="r-${q.id}" placeholder="${mart ? 'Add a follow-up or note' : 'Type your answer, or note what you sent and where'}"></textarea>
+    <div class="actions">
+      ${mart ? `<button type="button" data-act="follow-up" data-q="${q.id}">Send follow-up</button>
+        <button type="button" class="ghost" data-act="note" data-q="${q.id}">Add note</button>
+        <button type="button" class="ghost" data-act="Resolved" data-q="${q.id}">Mark resolved</button>
+        <button type="button" class="ghost" data-act="Open" data-q="${q.id}">Reopen</button>
+        <button type="button" class="ghost" data-act="vis" data-q="${q.id}">${q.visible ? 'Hide from Proteus' : 'Show to Proteus'}</button>`
+      : `<button type="button" data-act="answer" data-q="${q.id}">Submit answer</button>
+        <button type="button" class="ghost" data-act="Need to talk" data-q="${q.id}">Need to talk</button>`}
+    </div>
+  </div>`;
+}
+$('list').addEventListener('click', async e => {
+  const t = e.target.closest('[data-toggle]');
+  if (t){ const id = Number(t.dataset.toggle); open.has(id) ? open.delete(id) : open.add(id); return render(); }
+  const b = e.target.closest('button[data-act]'); if (!b) return;
+  const id = Number(b.dataset.q), act = b.dataset.act, txt = ($('r-' + id)?.value || '').trim();
+  b.disabled = true;
+  if (act === 'vis'){
+    const q = qs.find(x => x.id === id);
+    await sb.from('questions').update({ visible: !q.visible, updated_at: new Date().toISOString() }).eq('id', id);
+  } else {
+    let row = { question_id: id, author_email: me.email };
+    if (act === 'answer' || act === 'follow-up' || act === 'note'){
+      if (!txt){ b.disabled = false; $('r-' + id).focus(); return; }
+      row.kind = act; row.body = txt;
+    } else { row.kind = 'status'; row.new_status = act; row.body = txt || null; }
+    const { error } = await sb.from('question_events').insert(row);
+    if (error){ alertBox(b, 'Could not save. Please try again.'); b.disabled = false; return; }
+  }
+  await load();
+});
+$('list').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset.toggle){ e.preventDefault(); e.target.click(); } });
+function alertBox(el, m){ const s = document.createElement('span'); s.className = 'err'; s.textContent = m; el.parentNode.appendChild(s); }
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+  filter = b.dataset.f; document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b)); render();
+}));
+$('q').addEventListener('input', render);
+$('add-form').addEventListener('submit', async e => {
+  e.preventDefault(); $('add-err').hidden = true;
+  const no = (qs.reduce((m, q) => Math.max(m, q.no), 0)) + 1;
+  const { error } = await sb.from('questions').insert({ no, section: $('a-sec').value.trim(), title: $('a-title').value.trim(),
+    found: $('a-found').value.trim(), need: $('a-need').value.trim(), who: $('a-who').value.trim(), due: $('a-due').value.trim(), visible: $('a-vis').checked });
+  if (error){ $('add-err').textContent = 'Could not add: ' + error.message; $('add-err').hidden = false; return; }
+  e.target.reset(); $('a-who').value = 'Brenda'; load();
+});
+boot();
+</script>
+</body>
+</html>
