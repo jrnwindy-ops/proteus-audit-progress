@@ -87,7 +87,18 @@ button:disabled{opacity:.55;cursor:default}
 .ev .h{font-size:12.5px;color:var(--muted)}
 .ev .h b{color:var(--ink)}
 .ev .t{white-space:pre-wrap}
-.actions{display:flex;flex-wrap:wrap;gap:8px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.files{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.file{display:inline-flex;align-items:center;gap:8px;font-size:13.5px}
+.file a{color:var(--blue);font-weight:600;text-decoration:underline;cursor:pointer;word-break:break-all}
+.file .sz{color:var(--muted);font-size:12px}
+.drv{font-size:11px;font-weight:700;color:var(--green);background:var(--ok-bg);border-radius:999px;padding:1px 8px}
+.pick{display:flex;flex-direction:column;gap:6px;border:1px dashed var(--line);border-radius:8px;padding:10px 12px}
+.pick.over{border-color:var(--blue);background:var(--soft)}
+.pick .hint{font-size:12.5px;color:var(--muted)}
+.chosen{display:flex;flex-direction:column;gap:4px}
+.chosen .file button{padding:0 8px;font-size:12px;line-height:20px}
+.prog{font-size:12.5px;color:var(--muted)}
 .add{padding:18px;display:flex;flex-direction:column;gap:10px}
 .add .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 footer{color:var(--muted);font-size:12px;text-align:center;padding-bottom:32px}
@@ -123,7 +134,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding-bottom:32px}
   <section id="app" hidden>
     <div>
       <h1>Open questions</h1>
-      <p class="lede">Questions from our review of Proteus&rsquo;s records for the year ended June 30, 2026. Answer right on the page; every answer is saved with the date and kept as a record. If a question is better handled by phone, choose &ldquo;Need to talk&rdquo; and we will call. Figures come from Proteus&rsquo;s unaudited records.</p>
+      <p class="lede">Questions from our review of Proteus&rsquo;s records for the year ended June 30, 2026. Answer right on the page and attach any documents that go with your answer. Every answer and document is saved with the date and kept as a record. If a question is better handled by phone, choose &ldquo;Need to talk&rdquo; and we will call. Figures come from Proteus&rsquo;s unaudited records.</p>
     </div>
     <div class="tiles" style="margin-top:16px">
       <div class="card tile" style="--c:var(--muted)"><span class="lbl">Open</span><span class="big" id="t-open">&ndash;</span></div>
@@ -168,6 +179,9 @@ const sb = supabase.createClient('https://tukacdztkyraxzavsvpk.supabase.co','sb_
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = d => new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+const MAXB = 50 * 1024 * 1024;
+const kb = n => n == null ? '' : n < 1048576 ? Math.max(1, Math.round(n / 1024)) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
+let files = [], drafts = {}, pending = {}, busy = new Set();
 let me = null, qs = [], evs = [], filter = 'active', open = new Set(), lastSeen = 0;
 const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
 
@@ -185,7 +199,8 @@ async function boot(){
   await load();
   store.set('q-seen-' + email, String(Date.now()));
   sb.channel('q').on('postgres_changes',{event:'*',schema:'public',table:'question_events'},load)
-    .on('postgres_changes',{event:'*',schema:'public',table:'questions'},load).subscribe();
+    .on('postgres_changes',{event:'*',schema:'public',table:'questions'},load)
+    .on('postgres_changes',{event:'*',schema:'public',table:'question_files'},load).subscribe();
   setInterval(load, 60000);
 }
 function showLogin(msg){
@@ -202,12 +217,15 @@ $('login-form').addEventListener('submit', async e => {
 $('signout').addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); });
 
 async function load(){
-  const [a, b] = await Promise.all([
+  const [a, b, c] = await Promise.all([
     sb.from('questions').select('*').order('no'),
-    sb.from('question_events').select('*').order('created_at')
+    sb.from('question_events').select('*').order('created_at'),
+    sb.from('question_files').select('*').order('created_at')
   ]);
   if (a.error || b.error) return;
-  qs = a.data; evs = b.data; render();
+  qs = a.data; evs = b.data; files = c.error ? [] : c.data;
+  const typing = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.draft;
+  if (!busy.size && !typing) render();
 }
 function isNew(q){
   if (!lastSeen) return false;
@@ -230,10 +248,11 @@ function render(){
     if (q.section !== sec){ sec = q.section; html += `<div class="sec-h">${esc(sec)}</div>`; }
     const nw = isNew(q), ex = open.has(q.id);
     const th = evs.filter(e => e.question_id === q.id);
+    const nf = files.filter(f => f.question_id === q.id).length;
     html += `<article class="card q ${nw ? 'new' : ''}" data-id="${q.id}">
       <div class="q-top" data-toggle="${q.id}" role="button" tabindex="0" aria-expanded="${ex}">
         <span class="q-no">${q.no}</span>
-        <div class="q-title">${esc(q.title)}<div class="q-meta">${esc(q.who || '')}${q.due ? ' &middot; ' + esc(q.due) : ''}${th.length ? ' &middot; ' + th.length + ' update' + (th.length > 1 ? 's' : '') : ''}</div></div>
+        <div class="q-title">${esc(q.title)}<div class="q-meta">${esc(q.who || '')}${q.due ? ' &middot; ' + esc(q.due) : ''}${th.length ? ' &middot; ' + th.length + ' update' + (th.length > 1 ? 's' : '') : ''}${nf ? ' &middot; ' + nf + ' document' + (nf > 1 ? 's' : '') : ''}</div></div>
         ${nw ? '<span class="pill newtag">New</span>' : ''}${!q.visible ? '<span class="pill hidtag">Hidden</span>' : ''}${pill(q.status)}
       </div>
       ${ex ? body(q, th) : ''}
@@ -246,8 +265,14 @@ function body(q, th){
   return `<div class="q-body">
     <p><span class="k">What we found: </span>${esc(q.found)}</p>
     <p><span class="k">What we need: </span>${esc(q.need)}</p>
-    ${th.length ? `<div class="thread">${th.map(e => `<div class="ev"><div class="h"><b>${esc(e.author_name || e.author_email)}</b> &middot; ${fmt(e.created_at)}${e.new_status ? ' &middot; marked ' + esc(e.new_status) : ''}</div>${e.body ? `<div class="t">${esc(e.body)}</div>` : ''}</div>`).join('')}</div>` : ''}
-    <textarea id="r-${q.id}" placeholder="${mart ? 'Add a follow-up or note' : 'Type your answer, or note what you sent and where'}"></textarea>
+    ${th.length ? `<div class="thread">${th.map(e => `<div class="ev"><div class="h"><b>${esc(e.author_name || e.author_email)}</b> &middot; ${fmt(e.created_at)}${e.new_status ? ' &middot; marked ' + esc(e.new_status) : ''}</div>${e.body ? `<div class="t">${esc(e.body)}</div>` : ''}${fileList(files.filter(f => f.event_id === e.id), mart)}</div>`).join('')}</div>` : ''}
+    ${fileList(files.filter(f => f.question_id === q.id && !th.some(e => e.id === f.event_id)), mart)}
+    <textarea id="r-${q.id}" data-draft="${q.id}" placeholder="${mart ? 'Add a follow-up or note' : 'Type your answer, or note what you are attaching'}">${esc(drafts[q.id] || '')}</textarea>
+    <div class="pick" data-drop="${q.id}">
+      <div class="actions"><button type="button" class="ghost" data-act="pick" data-q="${q.id}">Attach documents</button><span class="hint">or drag files here. PDF, Excel, Word, images, up to 50 MB each.</span></div>
+      <input type="file" id="f-${q.id}" data-file-in="${q.id}" multiple hidden>
+      <div class="chosen">${(pending[q.id] || []).map((f, i) => `<span class="file">${esc(f.name)} <span class="sz">${kb(f.size)}</span><button type="button" class="ghost" data-act="unpick" data-q="${q.id}" data-i="${i}" aria-label="Remove ${esc(f.name)}">Remove</button></span>`).join('')}</div>
+    </div>
     <div class="actions">
       ${mart ? `<button type="button" data-act="follow-up" data-q="${q.id}">Send follow-up</button>
         <button type="button" class="ghost" data-act="note" data-q="${q.id}">Add note</button>
@@ -264,6 +289,9 @@ $('list').addEventListener('click', async e => {
   if (t){ const id = Number(t.dataset.toggle); open.has(id) ? open.delete(id) : open.add(id); return render(); }
   const b = e.target.closest('button[data-act]'); if (!b) return;
   const id = Number(b.dataset.q), act = b.dataset.act, txt = ($('r-' + id)?.value || '').trim();
+  if (act === 'pick'){ $('f-' + id).click(); return; }
+  if (act === 'unpick'){ pending[id].splice(Number(b.dataset.i), 1); return render(); }
+  const att = pending[id] || [];
   b.disabled = true;
   if (act === 'vis'){
     const q = qs.find(x => x.id === id);
@@ -271,15 +299,54 @@ $('list').addEventListener('click', async e => {
   } else {
     let row = { question_id: id, author_email: me.email };
     if (act === 'answer' || act === 'follow-up' || act === 'note'){
-      if (!txt){ b.disabled = false; $('r-' + id).focus(); return; }
-      row.kind = act; row.body = txt;
+      if (!txt && !att.length){ b.disabled = false; $('r-' + id).focus(); return; }
+      row.kind = act; row.body = txt || ('Attached ' + att.length + ' document' + (att.length > 1 ? 's' : '') + '.');
     } else { row.kind = 'status'; row.new_status = act; row.body = txt || null; }
-    const { error } = await sb.from('question_events').insert(row);
-    if (error){ alertBox(b, 'Could not save. Please try again.'); b.disabled = false; return; }
+    busy.add(id);
+    const { data: ev, error } = await sb.from('question_events').insert(row).select().single();
+    if (error){ busy.delete(id); alertBox(b, 'Could not save. Please try again.'); b.disabled = false; return; }
+    const failed = [];
+    for (let i = 0; i < att.length; i++){
+      const f = att[i];
+      setProg(b, 'Uploading ' + (i + 1) + ' of ' + att.length + ': ' + f.name);
+      const safe = f.name.replace(/[^\w.\- ]+/g, '_').slice(-120);
+      const path = id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '-' + safe;
+      const up = await sb.storage.from('question-files').upload(path, f, { contentType: f.type || 'application/octet-stream' });
+      if (up.error){ failed.push(f); continue; }
+      const ins = await sb.from('question_files').insert({ question_id: id, event_id: ev.id, path, name: f.name, size: f.size, mime: f.type || null, uploaded_by: me.email });
+      if (ins.error) failed.push(f);
+    }
+    busy.delete(id);
+    pending[id] = failed; drafts[id] = '';
+    if (failed.length){ await load(); alertBox($('f-' + id), failed.length + ' document' + (failed.length > 1 ? 's' : '') + ' did not upload. Your answer was saved. Please try attaching ' + (failed.length > 1 ? 'them' : 'it') + ' again.'); return; }
   }
   await load();
 });
-$('list').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset.toggle){ e.preventDefault(); e.target.click(); } });
+$('list').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && (e.target.dataset.toggle || e.target.dataset.path)){ e.preventDefault(); e.target.click(); } });
+function setProg(b, m){ let s = b.parentNode.querySelector('.prog'); if (!s){ s = document.createElement('span'); s.className = 'prog'; b.parentNode.appendChild(s); } s.textContent = m; }
+function fileList(list, mart){
+  if (!list.length) return '';
+  return `<div class="files">${list.map(f => `<span class="file">&#128206; <a data-path="${esc(f.path)}" data-name="${esc(f.name)}" role="button" tabindex="0">${esc(f.name)}</a> <span class="sz">${kb(f.size)}</span>${mart && f.drive_synced_at ? '<span class="drv">In Drive</span>' : ''}</span>`).join('')}</div>`;
+}
+function addFiles(id, list){
+  const ok = [], big = [];
+  for (const f of list) (f.size > MAXB ? big : ok).push(f);
+  pending[id] = (pending[id] || []).concat(ok);
+  render();
+  if (big.length) alertBox($('f-' + id), big.map(f => f.name).join(', ') + ' is over 50 MB. Please email it or split it.');
+}
+$('list').addEventListener('change', e => { const id = e.target.dataset.fileIn; if (id){ addFiles(Number(id), [...e.target.files]); } });
+$('list').addEventListener('input', e => { const id = e.target.dataset.draft; if (id) drafts[id] = e.target.value; });
+$('list').addEventListener('dragover', e => { const z = e.target.closest('[data-drop]'); if (z){ e.preventDefault(); z.classList.add('over'); } });
+$('list').addEventListener('dragleave', e => { const z = e.target.closest('[data-drop]'); if (z) z.classList.remove('over'); });
+$('list').addEventListener('drop', e => { const z = e.target.closest('[data-drop]'); if (!z) return; e.preventDefault(); addFiles(Number(z.dataset.drop), [...e.dataTransfer.files]); });
+$('list').addEventListener('click', async e => {
+  const a = e.target.closest('a[data-path]'); if (!a) return;
+  e.preventDefault();
+  const { data, error } = await sb.storage.from('question-files').createSignedUrl(a.dataset.path, 300, { download: a.dataset.name });
+  if (error || !data){ alertBox(a, 'Could not download. Please try again.'); return; }
+  location.href = data.signedUrl;
+});
 function alertBox(el, m){ const s = document.createElement('span'); s.className = 'err'; s.textContent = m; el.parentNode.appendChild(s); }
 document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
   filter = b.dataset.f; document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b)); render();
