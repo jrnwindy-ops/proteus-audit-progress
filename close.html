@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Proteus Monthly Close</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0F2A47">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Same house look as the progress page: navy masthead, gold rule, one column of cards. */
+:root{
+  --navy:#0F2A47; --blue:#09468F; --teal:#0E7D99; --gold:#F5B81F; --gold-d:#C8901A;
+  --green:#2E7D5B; --amber:#B7791F; --maroon:#9A3A43;
+  --bg:#F3F6FA; --panel:#FFFFFF; --ink:#0F2A47; --muted:#5B7390; --line:#DBE6F1; --soft:#EAF2FA;
+  --ok-bg:#E3F2EA; --warn-bg:#FBF1DA; --bad-bg:#F6E3E5; --mute-bg:#EEF2F7; --new-bg:#FFF6DB;
+  --shadow:0 1px 2px rgba(15,42,71,.06),0 4px 16px rgba(15,42,71,.05);
+  --serif:"Source Serif 4",Georgia,serif; --sans:"Libre Franklin",-apple-system,"Segoe UI",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --blue:#7FB2EE; --teal:#5CC3DD; --green:#5FBF8F; --amber:#E6B44C; --maroon:#E58A93;
+  --bg:#0B1624; --panel:#122236; --ink:#E6EDF5; --muted:#9AB0C8; --line:#22374F; --soft:#173049;
+  --ok-bg:#163A2B; --warn-bg:#3A2F14; --bad-bg:#3D1F24; --mute-bg:#1A2B40; --new-bg:#3A3214;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --blue:#7FB2EE; --teal:#5CC3DD; --green:#5FBF8F; --amber:#E6B44C; --maroon:#E58A93;
+  --bg:#0B1624; --panel:#122236; --ink:#E6EDF5; --muted:#9AB0C8; --line:#22374F; --soft:#173049;
+  --ok-bg:#163A2B; --warn-bg:#3A2F14; --bad-bg:#3D1F24; --mute-bg:#1A2B40; --new-bg:#3A3214; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+.wrap{max-width:980px;margin-inline:auto;padding-inline:16px}
+.mast{background:var(--navy);color:#fff;border-bottom:4px solid var(--gold);padding-top:env(safe-area-inset-top,0px)}
+.mast .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 20px;padding-block:16px}
+.org{font-weight:700;letter-spacing:.32em;font-size:15px}
+.tag{font-size:12px;color:#B9C8DA;letter-spacing:.04em}
+.who{font-size:12px;color:#B9C8DA;text-align:right}
+.who b{color:#fff;font-weight:600}
+.who button{margin-left:8px}
+main.wrap{display:flex;flex-direction:column;gap:20px;padding-block:24px 48px}
+h1{font-family:var(--serif);font-weight:600;font-size:30px;margin:0 0 6px}
+.lede{color:var(--muted);margin:0;max-width:70ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.login{max-width:420px;padding:24px;display:flex;flex-direction:column;gap:12px}
+label{font-size:13px;font-weight:600;color:var(--muted)}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+textarea{min-height:84px;resize:vertical}
+button{font:inherit;font-weight:600;font-size:14px;border-radius:8px;padding:8px 14px;border:1px solid var(--blue);background:var(--blue);color:#fff;cursor:pointer}
+button.ghost{background:transparent;color:var(--blue)}
+.mast button.ghost{color:#fff;border-color:#B9C8DA;padding:4px 10px;font-size:12px}
+button:disabled{opacity:.55;cursor:default}
+.err{color:var(--maroon);font-size:13px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tile{padding:14px 16px;border-top:4px solid var(--c)}
+.tile .big{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1.1;display:block}
+.tile .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;color:var(--ink);font-weight:500;padding:7px 12px}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.bar input{max-width:240px}
+.count{font-size:13px;color:var(--muted);margin-left:auto}
+.sec-h{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin:8px 0 -6px}
+.q{padding:16px 18px}
+.q.new{box-shadow:inset 4px 0 0 var(--gold),var(--shadow)}
+.q-top{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.q-no{font-family:var(--serif);font-weight:600;color:var(--gold-d);font-size:20px;min-width:30px}
+.q-title{font-weight:600;font-size:16px;flex:1}
+.q-meta{font-size:12.5px;color:var(--muted);margin-top:2px;font-weight:400}
+.pill{font-size:11.5px;font-weight:700;letter-spacing:.04em;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.s-Open{background:var(--mute-bg);color:var(--ink)}
+.s-Answered{background:var(--ok-bg);color:var(--green)}
+.s-Need{background:var(--warn-bg);color:var(--amber)}
+.s-Resolved{background:var(--soft);color:var(--blue)}
+.newtag{background:var(--new-bg);color:var(--gold-d)}
+.hidtag{background:var(--bad-bg);color:var(--maroon)}
+.q-body{margin-top:12px;padding-left:40px;display:flex;flex-direction:column;gap:10px}
+.q-body p{margin:0}
+.k{font-weight:700;color:var(--teal)}
+.thread{border-left:2px solid var(--line);padding-left:14px;display:flex;flex-direction:column;gap:10px}
+.ev .h{font-size:12.5px;color:var(--muted)}
+.ev .h b{color:var(--ink)}
+.ev .t{white-space:pre-wrap}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.files{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.file{display:inline-flex;align-items:center;gap:8px;font-size:13.5px}
+.file a{color:var(--blue);font-weight:600;text-decoration:underline;cursor:pointer;word-break:break-all}
+.file .sz{color:var(--muted);font-size:12px}
+.drv{font-size:11px;font-weight:700;color:var(--green);background:var(--ok-bg);border-radius:999px;padding:1px 8px}
+.pick{display:flex;flex-direction:column;gap:6px;border:1px dashed var(--line);border-radius:8px;padding:10px 12px}
+.pick.over{border-color:var(--blue);background:var(--soft)}
+.pick .hint{font-size:12.5px;color:var(--muted)}
+.chosen{display:flex;flex-direction:column;gap:4px}
+.chosen .file button{padding:0 8px;font-size:12px;line-height:20px}
+.prog{font-size:12.5px;color:var(--muted)}
+.add{padding:18px;display:flex;flex-direction:column;gap:10px}
+.add .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+footer{color:var(--muted);font-size:12px;text-align:center;padding-bottom:32px}
+@media (max-width:640px){
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .q-body{padding-left:0}
+  .bar input{max-width:none;flex:1 1 100%}
+  .count{margin-left:0}
+  .add .row{grid-template-columns:1fr}
+  h1{font-size:26px}
+}
+/* Monthly close additions */
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:14px 16px}
+.step{font-size:12px;color:var(--muted);border-top:4px solid var(--line);padding-top:6px}
+.step.done{border-color:var(--green);color:var(--ink)}
+.step.cur{border-color:var(--gold);color:var(--ink);font-weight:700}
+.months{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.months select{max-width:340px}
+.how{padding:16px 18px}
+.how summary{cursor:pointer;font-weight:700;color:var(--blue)}
+.how ol{margin:10px 0 0;padding-left:20px}
+.how li{margin-bottom:6px}
+.s-Not{background:var(--mute-bg);color:var(--ink)}
+.s-Uploaded{background:var(--soft);color:var(--blue)}
+.s-Accepted{background:var(--ok-bg);color:var(--green)}
+.s-Need{background:var(--warn-bg);color:var(--amber)}
+.s-NA{background:var(--mute-bg);color:var(--muted)}
+.due{font-size:13px;color:var(--muted)}
+.due b{color:var(--ink)}
+.admin{padding:14px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.admin select{max-width:260px}
+@media (max-width:640px){.steps{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="wrap">
+    <div><div class="org">PROTEUS, INC.</div><div class="tag">Monthly close &nbsp;|&nbsp; Prepared by Martinez Accounting, Inc.</div></div>
+    <div class="who" id="who" hidden><span>Signed in as <b id="who-name"></b></span><button class="ghost" id="signout" type="button">Sign out</button></div>
+  </div>
+</header>
+<main class="wrap">
+  <section id="login-view" hidden>
+    <h1>Monthly close</h1>
+    <p class="lede" style="margin-bottom:16px">This page is private. Please sign in with the email and password Martinez Accounting gave you.</p>
+    <form class="card login" id="login-form">
+      <div><label for="em">Email</label><input id="em" type="email" autocomplete="username" required></div>
+      <div><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
+      <button type="submit" id="login-btn">Sign in</button>
+      <div class="err" id="login-err" hidden></div>
+    </form>
+  </section>
+
+  <section id="app" hidden>
+    <div>
+      <h1>Monthly close</h1>
+      <p class="lede">Everything needed to close Proteus&rsquo;s books each month, in one place. Upload each document to its item, or mark it &ldquo;Not applicable&rdquo; if it does not apply this month. If you are stuck, choose &ldquo;Need help&rdquo; and we will call. Each upload is saved with the date and who sent it, so this page becomes the record of every month&rsquo;s close.</p>
+    </div>
+
+    <div id="empty" class="card q" style="margin-top:16px;color:var(--muted)" hidden>No months are open yet. Martinez Accounting will open the first month here.</div>
+
+    <div id="month-wrap" hidden>
+      <div class="months" style="margin-top:16px">
+        <label for="msel" style="margin:0">Month</label>
+        <select id="msel" aria-label="Choose a month"></select>
+        <span class="due" id="due"></span>
+      </div>
+
+      <div class="card steps" id="steps" style="margin-top:12px"></div>
+
+      <div class="tiles" style="margin-top:12px">
+        <div class="card tile" style="--c:var(--muted)"><span class="lbl">Still needed</span><span class="big" id="t-not">&ndash;</span></div>
+        <div class="card tile" style="--c:var(--blue)"><span class="lbl">Uploaded</span><span class="big" id="t-up">&ndash;</span></div>
+        <div class="card tile" style="--c:var(--amber)"><span class="lbl">Need help</span><span class="big" id="t-help">&ndash;</span></div>
+        <div class="card tile" style="--c:var(--green)"><span class="lbl">Accepted</span><span class="big" id="t-acc">&ndash;</span></div>
+      </div>
+
+      <details class="card how" style="margin-top:12px">
+        <summary>How the monthly close works</summary>
+        <ol>
+          <li><b>By business day 5:</b> upload the documents below for the month that just ended. Each item says who usually has it.</li>
+          <li><b>By business day 7:</b> Francisco uploads the trial balance, journal entry report and allocation reports after the month&rsquo;s entries are in.</li>
+          <li><b>By business day 10:</b> Martinez Accounting reconciles every bank account and prepares the month&rsquo;s correcting entries with support, ready for approval.</li>
+          <li><b>By business day 12:</b> Patty, or someone she designates, approves the entries. Proteus posts them and locks the month in AccuFund so the numbers no longer change.</li>
+          <li><b>By business day 15:</b> Martinez Accounting sends the one-page grant report and monthly summary to Michelle.</li>
+        </ol>
+        <p class="due" style="margin-top:8px">Business days count Monday to Friday after the month ends. Holidays may move a date by a day.</p>
+      </details>
+
+      <div class="bar" style="margin-top:16px">
+        <div class="seg" role="group" aria-label="Filter items">
+          <button type="button" data-f="needed" aria-pressed="true">Still needed</button>
+          <button type="button" data-f="all" aria-pressed="false">All items</button>
+        </div>
+        <input id="q" type="search" placeholder="Search items" aria-label="Search items">
+        <span class="count" id="count"></span>
+      </div>
+      <div id="list" style="display:flex;flex-direction:column;gap:12px;margin-top:16px"></div>
+
+      <div class="card admin" id="admin" hidden>
+        <span class="sec-h" style="margin:0;width:100%">Martinez only</span>
+        <label for="mstat" style="margin:0">Month status</label>
+        <select id="mstat">
+          <option>Collecting documents</option><option>In review</option><option>Entries ready for approval</option><option>Approved and posted</option><option>Locked</option>
+        </select>
+        <button type="button" class="ghost" id="mvis"></button>
+        <button type="button" class="ghost" id="madd">Open next month</button>
+        <span class="err" id="admin-err" hidden></span>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>Proteus, Inc. &nbsp;|&nbsp; Confidential &nbsp;|&nbsp; Martinez Accounting, Inc. &nbsp;|&nbsp; 559-743-7365</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const sb = supabase.createClient('https://tukacdztkyraxzavsvpk.supabase.co','sb_publishable_xx55_rU-F_SxbHgx7PisVw_PPoXDMZ_');
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = d => new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+const MAXB = 50 * 1024 * 1024;
+const kb = n => n == null ? '' : n < 1048576 ? Math.max(1, Math.round(n / 1024)) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
+const STEPS = ['Collecting documents','In review','Entries ready for approval','Approved and posted','Locked'];
+const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
+let me = null, items = [], months = [], stat = [], files = [], cur = null, filter = 'needed', open = new Set(), pending = {}, drafts = {}, busy = new Set();
+
+async function boot(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if (!session) return showLogin();
+  const email = session.user.email.toLowerCase();
+  const { data: u } = await sb.from('q_users').select('*').eq('email', email).maybeSingle();
+  if (!u) { await sb.auth.signOut(); return showLogin('This account does not have access to this page.'); }
+  me = u;
+  $('who-name').textContent = u.name; $('who').hidden = false;
+  $('login-view').hidden = true; $('app').hidden = false;
+  $('admin').hidden = me.role !== 'martinez';
+  await load(true);
+  sb.channel('close').on('postgres_changes',{event:'*',schema:'public',table:'close_status'},() => load())
+    .on('postgres_changes',{event:'*',schema:'public',table:'close_files'},() => load())
+    .on('postgres_changes',{event:'*',schema:'public',table:'close_months'},() => load()).subscribe();
+  setInterval(() => load(), 60000);
+}
+function showLogin(msg){
+  $('app').hidden = true; $('who').hidden = true; $('login-view').hidden = false;
+  if (msg){ $('login-err').textContent = msg; $('login-err').hidden = false; }
+}
+$('login-form').addEventListener('submit', async e => {
+  e.preventDefault(); $('login-btn').disabled = true; $('login-err').hidden = true;
+  const { error } = await sb.auth.signInWithPassword({ email: $('em').value.trim(), password: $('pw').value });
+  $('login-btn').disabled = false;
+  if (error) { $('login-err').textContent = 'That email and password did not match. Please try again.'; $('login-err').hidden = false; return; }
+  boot();
+});
+$('signout').addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); });
+
+async function load(first){
+  const [a, b] = await Promise.all([
+    sb.from('close_items').select('*').eq('active', true).order('sort'),
+    sb.from('close_months').select('*').order('period')
+  ]);
+  if (a.error || b.error) return;
+  items = a.data; months = b.data;
+  if (!months.length){ $('empty').hidden = false; $('month-wrap').hidden = true; return; }
+  $('empty').hidden = true; $('month-wrap').hidden = false;
+  if (first || !months.some(m => m.id === cur)){
+    const saved = Number(store.get('close-month'));
+    const firstOpen = months.find(m => m.status !== 'Locked');
+    cur = months.some(m => m.id === saved) ? saved : (firstOpen || months[months.length - 1]).id;
+  }
+  const [c, d] = await Promise.all([
+    sb.from('close_status').select('*').eq('month_id', cur),
+    sb.from('close_files').select('*').eq('month_id', cur).order('created_at')
+  ]);
+  stat = c.error ? [] : c.data; files = d.error ? [] : d.data;
+  const typing = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.draft;
+  if (!busy.size && !typing) render();
+}
+function addBusinessDays(d, n){
+  const x = new Date(d); let c = 0;
+  while (c < n){ x.setDate(x.getDate() + 1); const w = x.getDay(); if (w !== 0 && w !== 6) c++; }
+  return x;
+}
+function dueDate(m, day){
+  const p = new Date(m.period + 'T12:00:00');
+  const last = new Date(p.getFullYear(), p.getMonth() + 1, 0, 12);
+  return addBusinessDays(last, day);
+}
+const dshort = d => d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+function stOf(id){ return stat.find(s => s.item_id === id) || { status: 'Not yet' }; }
+function pillCls(s){ return s === 'Not yet' ? 'Not' : s === 'Need help' ? 'Need' : s === 'Not applicable' ? 'NA' : s; }
+
+function render(){
+  const m = months.find(x => x.id === cur);
+  $('msel').innerHTML = months.map(x => `<option value="${x.id}" ${x.id === cur ? 'selected' : ''}>${esc(x.label)}${!x.visible ? ' (hidden from Proteus)' : ''}${x.status === 'Locked' ? ' (locked)' : ''}</option>`).join('');
+  $('due').innerHTML = `Documents due <b>${dshort(dueDate(m, 5))}</b> &middot; reports due <b>${dshort(dueDate(m, 7))}</b>`;
+  const si = STEPS.indexOf(m.status);
+  $('steps').innerHTML = STEPS.map((s, i) => `<div class="step ${i < si ? 'done' : i === si ? 'cur' : ''}">${esc(s)}</div>`).join('');
+  const c = s => items.filter(it => stOf(it.id).status === s).length;
+  $('t-not').textContent = c('Not yet'); $('t-up').textContent = c('Uploaded');
+  $('t-help').textContent = c('Need help'); $('t-acc').textContent = c('Accepted') + c('Not applicable');
+  const term = $('q').value.trim().toLowerCase();
+  const shown = items.filter(it => (filter === 'all' || ['Not yet','Need help'].includes(stOf(it.id).status))
+    && (!term || (it.title + ' ' + it.detail + ' ' + it.section + ' ' + (it.who || '')).toLowerCase().includes(term)));
+  $('count').textContent = shown.length + ' of ' + items.length;
+  let html = '', sec = '';
+  for (const it of shown){
+    if (it.section !== sec){ sec = it.section; html += `<div class="sec-h">${esc(sec)}</div>`; }
+    const s = stOf(it.id), ex = open.has(it.id);
+    const fl = files.filter(f => f.item_id === it.id);
+    html += `<article class="card q" data-id="${it.id}">
+      <div class="q-top" data-toggle="${it.id}" role="button" tabindex="0" aria-expanded="${ex}">
+        <span class="q-no">${it.sort / 10}</span>
+        <div class="q-title">${esc(it.title)}<div class="q-meta">${esc(it.who || '')} &middot; by ${dshort(dueDate(m, it.due_day))}${fl.length ? ' &middot; ' + fl.length + ' document' + (fl.length > 1 ? 's' : '') : ''}</div></div>
+        <span class="pill s-${pillCls(s.status)}">${esc(s.status)}</span>
+      </div>
+      ${ex ? body(it, s, fl, m) : ''}
+    </article>`;
+  }
+  $('list').innerHTML = html || '<div class="card q" style="color:var(--muted)">Everything for this month is in. Thank you.</div>';
+  if (me.role === 'martinez'){ $('mstat').value = m.status; $('mvis').textContent = m.visible ? 'Hide this month from Proteus' : 'Show this month to Proteus'; }
+}
+function body(it, s, fl, m){
+  const mart = me.role === 'martinez', locked = m.status === 'Locked' && !mart;
+  return `<div class="q-body">
+    <p><span class="k">What we need: </span>${esc(it.detail)}</p>
+    ${it.why ? `<p><span class="k">Why: </span>${esc(it.why)}</p>` : ''}
+    ${s.updated_at && s.status !== 'Not yet' ? `<p class="q-meta">Marked ${esc(s.status)} by ${esc(s.updated_name || s.updated_by || '')} &middot; ${fmt(s.updated_at)}${s.note ? '<br>' + esc(s.note) : ''}</p>` : ''}
+    ${fl.length ? `<div class="files">${fl.map(f => `<span class="file">&#128206; <a data-path="${esc(f.path)}" data-name="${esc(f.name)}" role="button" tabindex="0">${esc(f.name)}</a> <span class="sz">${kb(f.size)} &middot; ${esc(f.uploader_name || f.uploaded_by)} &middot; ${fmt(f.created_at)}</span></span>`).join('')}</div>` : ''}
+    ${locked ? '<p class="q-meta">This month is locked.</p>' : `
+    <textarea id="r-${it.id}" data-draft="${it.id}" placeholder="Optional note, for example which accounts are included or what is still coming">${esc(drafts[it.id] || '')}</textarea>
+    <div class="pick" data-drop="${it.id}">
+      <div class="actions"><button type="button" class="ghost" data-act="pick" data-i="${it.id}">Choose documents</button><span class="hint">or drag files here. PDF, Excel, Word, images, up to 50 MB each.</span></div>
+      <input type="file" id="f-${it.id}" data-file-in="${it.id}" multiple hidden>
+      <div class="chosen">${(pending[it.id] || []).map((f, i) => `<span class="file">${esc(f.name)} <span class="sz">${kb(f.size)}</span><button type="button" class="ghost" data-act="unpick" data-i="${it.id}" data-n="${i}">Remove</button></span>`).join('')}</div>
+    </div>
+    <div class="actions">
+      <button type="button" data-act="upload" data-i="${it.id}">Upload</button>
+      <button type="button" class="ghost" data-act="Not applicable" data-i="${it.id}">Not applicable this month</button>
+      <button type="button" class="ghost" data-act="Need help" data-i="${it.id}">Need help</button>
+      ${mart ? `<button type="button" class="ghost" data-act="Accepted" data-i="${it.id}">Accept</button>
+      <button type="button" class="ghost" data-act="Not yet" data-i="${it.id}">Reopen</button>` : ''}
+    </div>`}
+  </div>`;
+}
+async function setStatus(id, status, note){
+  return sb.from('close_status').upsert({ month_id: cur, item_id: id, status, note: note || null }, { onConflict: 'month_id,item_id' });
+}
+$('list').addEventListener('click', async e => {
+  const a = e.target.closest('a[data-path]');
+  if (a){
+    e.preventDefault();
+    const { data, error } = await sb.storage.from('close-files').createSignedUrl(a.dataset.path, 300, { download: a.dataset.name });
+    if (error || !data){ alertBox(a, 'Could not download. Please try again.'); return; }
+    location.href = data.signedUrl; return;
+  }
+  const t = e.target.closest('[data-toggle]');
+  if (t){ const id = Number(t.dataset.toggle); open.has(id) ? open.delete(id) : open.add(id); return render(); }
+  const b = e.target.closest('button[data-act]'); if (!b) return;
+  const id = Number(b.dataset.i), act = b.dataset.act, note = ($('r-' + id)?.value || '').trim();
+  if (act === 'pick'){ $('f-' + id).click(); return; }
+  if (act === 'unpick'){ pending[id].splice(Number(b.dataset.n), 1); return render(); }
+  b.disabled = true;
+  if (act === 'upload'){
+    const att = pending[id] || [];
+    if (!att.length){ b.disabled = false; alertBox(b, 'Choose at least one document first.'); return; }
+    busy.add(id);
+    const failed = [];
+    for (let i = 0; i < att.length; i++){
+      const f = att[i];
+      setProg(b, 'Uploading ' + (i + 1) + ' of ' + att.length + ': ' + f.name);
+      const safe = f.name.replace(/[^\w.\- ]+/g, '_').slice(-120);
+      const path = cur + '/' + id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '-' + safe;
+      const up = await sb.storage.from('close-files').upload(path, f, { contentType: f.type || 'application/octet-stream' });
+      if (up.error){ failed.push(f); continue; }
+      const ins = await sb.from('close_files').insert({ month_id: cur, item_id: id, path, name: f.name, size: f.size, mime: f.type || null, uploaded_by: me.email });
+      if (ins.error) failed.push(f);
+    }
+    if (note && failed.length < att.length) await setStatus(id, 'Uploaded', note);
+    busy.delete(id); pending[id] = failed; drafts[id] = '';
+    await load();
+    if (failed.length) alertBox($('f-' + id), failed.length + ' document' + (failed.length > 1 ? 's' : '') + ' did not upload. Please try again.');
+    return;
+  }
+  if ((act === 'Need help' || act === 'Not applicable') && !note && act === 'Need help'){ b.disabled = false; $('r-' + id).focus(); alertBox(b, 'Add a short note so we know what you need.'); return; }
+  const { error } = await setStatus(id, act, note);
+  if (error){ b.disabled = false; alertBox(b, 'Could not save. Please try again.'); return; }
+  drafts[id] = '';
+  await load();
+});
+$('list').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && (e.target.dataset.toggle || e.target.dataset.path)){ e.preventDefault(); e.target.click(); } });
+function setProg(b, m){ let s = b.parentNode.querySelector('.prog'); if (!s){ s = document.createElement('span'); s.className = 'prog'; b.parentNode.appendChild(s); } s.textContent = m; }
+function alertBox(el, m){ const s = document.createElement('span'); s.className = 'err'; s.textContent = m; el.parentNode.appendChild(s); }
+function addFiles(id, list){
+  const ok = [], big = [];
+  for (const f of list) (f.size > MAXB ? big : ok).push(f);
+  pending[id] = (pending[id] || []).concat(ok);
+  render();
+  if (big.length) alertBox($('f-' + id), big.map(f => f.name).join(', ') + ' is over 50 MB. Please email it or split it.');
+}
+$('list').addEventListener('change', e => { const id = e.target.dataset.fileIn; if (id) addFiles(Number(id), [...e.target.files]); });
+$('list').addEventListener('input', e => { const id = e.target.dataset.draft; if (id) drafts[id] = e.target.value; });
+$('list').addEventListener('dragover', e => { const z = e.target.closest('[data-drop]'); if (z){ e.preventDefault(); z.classList.add('over'); } });
+$('list').addEventListener('dragleave', e => { const z = e.target.closest('[data-drop]'); if (z) z.classList.remove('over'); });
+$('list').addEventListener('drop', e => { const z = e.target.closest('[data-drop]'); if (!z) return; e.preventDefault(); addFiles(Number(z.dataset.drop), [...e.dataTransfer.files]); });
+$('msel').addEventListener('change', e => { cur = Number(e.target.value); store.set('close-month', String(cur)); open.clear(); load(); });
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+  filter = b.dataset.f; document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b)); render();
+}));
+$('q').addEventListener('input', render);
+async function adminDo(p){ $('admin-err').hidden = true; const { error } = await p; if (error){ $('admin-err').textContent = 'Could not save: ' + error.message; $('admin-err').hidden = false; } await load(); }
+$('mstat').addEventListener('change', e => adminDo(sb.from('close_months').update({ status: e.target.value, updated_at: new Date().toISOString() }).eq('id', cur)));
+$('mvis').addEventListener('click', () => { const m = months.find(x => x.id === cur); adminDo(sb.from('close_months').update({ visible: !m.visible, updated_at: new Date().toISOString() }).eq('id', cur)); });
+$('madd').addEventListener('click', () => {
+  const last = months[months.length - 1];
+  const p = new Date(last.period + 'T12:00:00'); const n = new Date(p.getFullYear(), p.getMonth() + 1, 1, 12);
+  const period = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-01';
+  const label = n.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  adminDo(sb.from('close_months').insert({ period, label, visible: false }));
+});
+boot();
+</script>
+</body>
+</html>
