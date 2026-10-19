@@ -110,6 +110,10 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding-bottom:32px}
   .add .row{grid-template-columns:1fr}
   h1{font-size:26px}
 }
+.mast .pnav{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px;padding-top:0;padding-bottom:14px}
+.pnav a{font-family:var(--sans,inherit);font-size:13px;font-weight:600;text-decoration:none;color:#fff;border:1px solid rgba(185,200,218,.6);border-radius:999px;padding:5px 14px;line-height:1.3}
+.pnav a:hover{background:rgba(255,255,255,.1)}
+.pnav a[aria-current="page"]{background:var(--gold,#F5B81F);border-color:var(--gold,#F5B81F);color:#0F2A47}
 </style>
 </head>
 <body>
@@ -118,6 +122,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding-bottom:32px}
     <div><div class="org">PROTEUS, INC.</div><div class="tag">Open questions &nbsp;|&nbsp; Prepared by Martinez Accounting, Inc.</div></div>
     <div class="who" id="who" hidden><span>Signed in as <b id="who-name"></b></span><button class="ghost" id="signout" type="button">Sign out</button></div>
   </div>
+<nav class="wrap pnav" aria-label="Proteus pages"><a href="/index.html">Audit progress</a><a href="/questions.html" aria-current="page">Open questions</a><a href="/close.html">Monthly close</a></nav>
 </header>
 <main class="wrap">
   <section id="login-view" hidden>
