@@ -130,6 +130,11 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding-bottom:32px}
 .due b{color:var(--ink)}
 .admin{padding:14px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .admin select{max-width:260px}
+.monthbar{background:var(--navy);color:#fff;border-radius:12px;padding:14px 18px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.monthbar .ml{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#B9C8DA}
+.monthbar .mn{font-family:var(--serif);font-size:26px;font-weight:600}
+.monthbar .ms{font-size:13px;color:#B9C8DA}
+.where{background:var(--soft);border-radius:8px;padding:8px 12px}
 @media (max-width:640px){.steps{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -167,6 +172,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding-bottom:32px}
         <span class="due" id="due"></span>
       </div>
 
+      <div class="monthbar" id="monthbar" style="margin-top:12px"></div>
       <div class="card steps" id="steps" style="margin-top:12px"></div>
 
       <div class="tiles" style="margin-top:12px">
@@ -185,7 +191,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding-bottom:32px}
           <li><b>By business day 12:</b> Patty, or someone she designates, approves the entries. Proteus posts them and locks the month in AccuFund so the numbers no longer change.</li>
           <li><b>By business day 15:</b> Martinez Accounting sends the one-page grant report and monthly summary to Michelle.</li>
         </ol>
-        <p class="due" style="margin-top:8px">Business days count Monday to Friday after the month ends. Holidays may move a date by a day.</p>
+        <p class="due" style="margin-top:8px">Business days count Monday to Friday after the month ends. Holidays may move a date by a day. Report names under &ldquo;Where to get it&rdquo; match the reports Proteus sent us in October. If a name looks different on your screen, upload what you have and add a note.</p>
       </details>
 
       <div class="bar" style="margin-top:16px">
@@ -294,6 +300,7 @@ function render(){
   const m = months.find(x => x.id === cur);
   $('msel').innerHTML = months.map(x => `<option value="${x.id}" ${x.id === cur ? 'selected' : ''}>${esc(x.label)}${!x.visible ? ' (hidden from Proteus)' : ''}${x.status === 'Locked' ? ' (locked)' : ''}</option>`).join('');
   $('due').innerHTML = `Documents due <b>${dshort(dueDate(m, 5))}</b> &middot; reports due <b>${dshort(dueDate(m, 7))}</b>`;
+  $('monthbar').innerHTML = `<span class="ml">You are working on</span><span class="mn">${esc(m.label)}</span><span class="ms">Everything you upload on this page is saved to ${esc(m.label)}. To work on a different month, change the Month box above.</span>`;
   const si = STEPS.indexOf(m.status);
   $('steps').innerHTML = STEPS.map((s, i) => `<div class="step ${i < si ? 'done' : i === si ? 'cur' : ''}">${esc(s)}</div>`).join('');
   const c = s => items.filter(it => stOf(it.id).status === s).length;
@@ -301,7 +308,7 @@ function render(){
   $('t-help').textContent = c('Need help'); $('t-acc').textContent = c('Accepted') + c('Not applicable');
   const term = $('q').value.trim().toLowerCase();
   const shown = items.filter(it => (filter === 'all' || ['Not yet','Need help'].includes(stOf(it.id).status))
-    && (!term || (it.title + ' ' + it.detail + ' ' + it.section + ' ' + (it.who || '')).toLowerCase().includes(term)));
+    && (!term || (it.title + ' ' + it.detail + ' ' + it.section + ' ' + (it.who || '') + ' ' + (it.where_to_get || '')).toLowerCase().includes(term)));
   $('count').textContent = shown.length + ' of ' + items.length;
   let html = '', sec = '';
   for (const it of shown){
@@ -324,6 +331,7 @@ function body(it, s, fl, m){
   const mart = me.role === 'martinez', locked = m.status === 'Locked' && !mart;
   return `<div class="q-body">
     <p><span class="k">What we need: </span>${esc(it.detail)}</p>
+    ${it.where_to_get ? `<p class="where"><span class="k">Where to get it: </span>${esc(it.where_to_get)}</p>` : ''}
     ${it.why ? `<p><span class="k">Why: </span>${esc(it.why)}</p>` : ''}
     ${s.updated_at && s.status !== 'Not yet' ? `<p class="q-meta">Marked ${esc(s.status)} by ${esc(s.updated_name || s.updated_by || '')} &middot; ${fmt(s.updated_at)}${s.note ? '<br>' + esc(s.note) : ''}</p>` : ''}
     ${fl.length ? `<div class="files">${fl.map(f => `<span class="file">&#128206; <a data-path="${esc(f.path)}" data-name="${esc(f.name)}" role="button" tabindex="0">${esc(f.name)}</a> <span class="sz">${kb(f.size)} &middot; ${esc(f.uploader_name || f.uploaded_by)} &middot; ${fmt(f.created_at)}</span></span>`).join('')}</div>` : ''}
@@ -335,7 +343,7 @@ function body(it, s, fl, m){
       <div class="chosen">${(pending[it.id] || []).map((f, i) => `<span class="file">${esc(f.name)} <span class="sz">${kb(f.size)}</span><button type="button" class="ghost" data-act="unpick" data-i="${it.id}" data-n="${i}">Remove</button></span>`).join('')}</div>
     </div>
     <div class="actions">
-      <button type="button" data-act="upload" data-i="${it.id}">Upload</button>
+      <button type="button" data-act="upload" data-i="${it.id}">Upload to ${esc(m.label)}</button>
       <button type="button" class="ghost" data-act="Not applicable" data-i="${it.id}">Not applicable this month</button>
       <button type="button" class="ghost" data-act="Need help" data-i="${it.id}">Need help</button>
       ${mart ? `<button type="button" class="ghost" data-act="Accepted" data-i="${it.id}">Accept</button>
