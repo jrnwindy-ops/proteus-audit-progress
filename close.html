@@ -140,13 +140,35 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding-bottom:32px}
 .pnav a{font-family:var(--sans,inherit);font-size:13px;font-weight:600;text-decoration:none;color:#fff;border:1px solid rgba(185,200,218,.6);border-radius:999px;padding:5px 14px;line-height:1.3}
 .pnav a:hover{background:rgba(255,255,255,.1)}
 .pnav a[aria-current="page"]{background:var(--gold,#F5B81F);border-color:var(--gold,#F5B81F);color:#0F2A47}
+
+.pwbox{position:fixed;inset:0;background:rgba(15,42,71,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.pwbox[hidden]{display:none}
+.pwcard{background:#fff;color:#14263d;text-align:left;border-radius:12px;max-width:380px;width:100%;padding:20px 22px;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.pwcard h3{margin:0 0 6px;font-size:17px}
+.pwcard p{margin:0 0 12px;font-size:13px;opacity:.8}
+.pwcard label{display:block;font-size:13px;margin:10px 0 4px}
+.pwcard input{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid #c9d3df;border-radius:8px;font-size:14px}
+.pwcard .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.pwcard .ghost{color:#14263d;border:1px solid #c9d3df;background:#fff}
+.pwcard h3,.pwcard p,.pwcard label{color:#14263d}
+#pwcancel{color:#14263d !important;border-color:#c9d3df !important;background:#fff !important}
+.pwmsg{font-size:13px;margin-top:10px;min-height:18px}
+.pwmsg.err{color:#b42318}.pwmsg.ok{color:#067647}
 </style>
 </head>
 <body>
 <header class="mast">
   <div class="wrap">
     <div><div class="org">PROTEUS, INC.</div><div class="tag">Monthly close &nbsp;|&nbsp; Prepared by Martinez Accounting, Inc.</div></div>
-    <div class="who" id="who" hidden><span>Signed in as <b id="who-name"></b></span><button class="ghost" id="signout" type="button">Sign out</button></div>
+    <div class="who" id="who" hidden><span>Signed in as <b id="who-name"></b></span><button class="ghost" id="chpw" type="button">Change password</button><button class="ghost" id="signout" type="button">Sign out</button></div>
+<div class="pwbox" id="pwbox" hidden><div class="pwcard" role="dialog" aria-modal="true" aria-labelledby="pwtitle">
+<h3 id="pwtitle">Change your password</h3><p>Pick something at least 8 characters long that you don't use anywhere else.</p>
+<label for="pw1">New password</label><input id="pw1" type="password" autocomplete="new-password">
+<label for="pw2">Type it again</label><input id="pw2" type="password" autocomplete="new-password">
+<div class="pwmsg" id="pwmsg"></div>
+<div class="row"><button class="ghost" id="pwcancel" type="button">Cancel</button><button id="pwsave" type="button">Save password</button></div>
+</div></div>
+
   </div>
 <nav class="wrap pnav" aria-label="Proteus pages"><a href="/index.html">Audit progress</a><a href="/questions.html">Open questions</a><a href="/close.html" aria-current="page">Monthly close</a></nav>
 </header>
@@ -264,6 +286,20 @@ $('login-form').addEventListener('submit', async e => {
   boot();
 });
 $('signout').addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); });
+$('chpw').addEventListener('click', () => { $('pw1').value=''; $('pw2').value=''; $('pwmsg').textContent=''; $('pwmsg').className='pwmsg'; $('pwbox').hidden=false; $('pw1').focus(); });
+$('pwcancel').addEventListener('click', () => { $('pwbox').hidden=true; });
+$('pwsave').addEventListener('click', async () => {
+  const a=$('pw1').value, b=$('pw2').value, m=$('pwmsg');
+  if (a.length < 8) { m.textContent='Please use at least 8 characters.'; m.className='pwmsg err'; return; }
+  if (a !== b) { m.textContent='The two passwords do not match.'; m.className='pwmsg err'; return; }
+  $('pwsave').disabled=true;
+  const { error } = await sb.auth.updateUser({ password: a });
+  $('pwsave').disabled=false;
+  if (error) { m.textContent='Could not change it: ' + error.message; m.className='pwmsg err'; return; }
+  m.textContent='Done. Use your new password next time you sign in.'; m.className='pwmsg ok';
+  setTimeout(() => { $('pwbox').hidden=true; }, 1600);
+});
+
 
 async function load(first){
   const [a, b] = await Promise.all([
