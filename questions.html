@@ -79,6 +79,9 @@ button:disabled{opacity:.55;cursor:default}
 .s-Need{background:var(--warn-bg);color:var(--amber)}
 .s-Resolved{background:var(--soft);color:var(--blue)}
 .newtag{background:var(--new-bg);color:var(--gold-d)}
+.newbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--new-bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:16px;font-size:14px}
+.newbar b{color:var(--gold-d)}
+.newbar button{margin-left:auto}
 .hidtag{background:var(--bad-bg);color:var(--maroon)}
 .q-body{margin-top:12px;padding-left:40px;display:flex;flex-direction:column;gap:10px}
 .q-body p{margin:0}
@@ -169,9 +172,11 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding-bottom:32px}
       <div class="card tile" style="--c:var(--amber)"><span class="lbl">Need to talk</span><span class="big" id="t-talk">&ndash;</span></div>
       <div class="card tile" style="--c:var(--blue)"><span class="lbl">Resolved</span><span class="big" id="t-res">&ndash;</span></div>
     </div>
+    <div class="newbar" id="newbar" hidden><span id="newbar-t"></span><button type="button" id="newbar-b">Show new</button></div>
     <div class="bar" style="margin-top:16px">
       <div class="seg" role="group" aria-label="Filter by status">
         <button type="button" data-f="active" aria-pressed="true">Needs attention</button>
+        <button type="button" data-f="new" aria-pressed="false">New</button>
         <button type="button" data-f="all" aria-pressed="false">All</button>
         <button type="button" data-f="Resolved" aria-pressed="false">Resolved</button>
       </div>
@@ -268,7 +273,11 @@ async function load(){
   const typing = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.draft;
   if (!busy.size && !typing) render();
 }
+const RECENT_MS = 48 * 3600 * 1000;
+function isFresh(q){ return Date.now() - new Date(q.created_at).getTime() < RECENT_MS; }
 function isNew(q){
+  if (q.status === 'Resolved') return false;
+  if (isFresh(q)) return true;
   if (!lastSeen) return false;
   const t = new Date(q.created_at).getTime();
   const lastOther = evs.filter(e => e.question_id === q.id && e.author_email !== me.email).map(e => new Date(e.created_at).getTime());
@@ -280,7 +289,13 @@ function render(){
   $('t-open').textContent = c('Open'); $('t-ans').textContent = c('Answered');
   $('t-talk').textContent = c('Need to talk'); $('t-res').textContent = c('Resolved');
   const term = $('q').value.trim().toLowerCase();
-  const shown = qs.filter(q => (filter === 'all' || (filter === 'active' ? q.status !== 'Resolved' : q.status === filter))
+  const newQs = qs.filter(isNew);
+  const freshN = qs.filter(q => q.status !== 'Resolved' && isFresh(q)).length;
+  $('newbar').hidden = !newQs.length;
+  if (newQs.length) $('newbar-t').innerHTML = freshN
+    ? `<b>${freshN} new question${freshN > 1 ? 's' : ''}</b> added in the last two days${newQs.length > freshN ? ', plus ' + (newQs.length - freshN) + ' with new replies' : ''}. They are marked <b>New</b> below.`
+    : `<b>${newQs.length} question${newQs.length > 1 ? 's' : ''}</b> with new replies since your last visit. They are marked <b>New</b> below.`;
+  const shown = qs.filter(q => (filter === 'all' || (filter === 'new' ? isNew(q) : filter === 'active' ? q.status !== 'Resolved' : q.status === filter))
     && (!term || (q.title + ' ' + q.found + ' ' + q.need + ' ' + q.section).toLowerCase().includes(term)));
   $('count').textContent = shown.length + ' of ' + qs.length;
   $('secs').innerHTML = [...new Set(qs.map(q => q.section))].map(s => `<option value="${esc(s)}">`).join('');
@@ -393,6 +408,7 @@ document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click'
   filter = b.dataset.f; document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b)); render();
 }));
 $('q').addEventListener('input', render);
+$('newbar-b').addEventListener('click', () => { filter = 'new'; document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x.dataset.f === 'new')); render(); });
 $('add-form').addEventListener('submit', async e => {
   e.preventDefault(); $('add-err').hidden = true;
   const no = (qs.reduce((m, q) => Math.max(m, q.no), 0)) + 1;
