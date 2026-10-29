@@ -274,12 +274,13 @@ async function load(){
   if (!busy.size && !typing) render();
 }
 const RECENT_MS = 48 * 3600 * 1000;
-function isFresh(q){ return Date.now() - new Date(q.created_at).getTime() < RECENT_MS; }
+function postedAt(q){ return new Date(q.posted_at || q.created_at).getTime(); }
+function isFresh(q){ return Date.now() - postedAt(q) < RECENT_MS; }
 function isNew(q){
   if (q.status === 'Resolved') return false;
   if (isFresh(q)) return true;
   if (!lastSeen) return false;
-  const t = new Date(q.created_at).getTime();
+  const t = postedAt(q);
   const lastOther = evs.filter(e => e.question_id === q.id && e.author_email !== me.email).map(e => new Date(e.created_at).getTime());
   return t > lastSeen || lastOther.some(x => x > lastSeen);
 }
