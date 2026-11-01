@@ -336,6 +336,7 @@ footer b{color:var(--ink)}
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (function () {
   const SUBMIT = '2026-11-16';
@@ -355,10 +356,14 @@ footer b{color:var(--ink)}
   const mkChip = s => { const [c, t] = chip(s); return el('span', 'chip ' + c, t); };
   const bar = (rec, part, total, cls) => { const b = el('div', 'bar' + (cls ? ' ' + cls : '')); const a = el('span', 'ok'); const w = el('span', 'wa'); a.style.width = total ? rec / total * 100 + '%' : '0'; w.style.width = total ? part / total * 100 + '%' : '0'; b.append(a, w); return b; };
 
-  // Live data: read-only Supabase tables (public read, writes only by Martinez Accounting).
+  // Live data from Supabase. Sign-in required: the same accounts as the questions and monthly close pages.
   const SB = 'https://tukacdztkyraxzavsvpk.supabase.co/rest/v1/';
   const KEY = 'sb_publishable_xx55_rU-F_SxbHgx7PisVw_PPoXDMZ_';
-  const sb = path => fetch(SB + path, { cache: 'no-store', headers: { apikey: KEY } }).then(r => { if (!r.ok) throw new Error(path); return r.json(); });
+  const ORG = 'eab09cc2-cd4f-43bf-8a02-e85aba57bc10'; // Proteus, Inc.
+  const client = supabase.createClient('https://tukacdztkyraxzavsvpk.supabase.co', KEY);
+  const ready = client.auth.getSession().then(({ data: { session } }) => { if (!session) throw new Error('signin'); return session.access_token; });
+  const sb = path => ready.then(tok => fetch(SB + path + (path.includes('?') ? '&' : '?') + 'org_id=eq.' + ORG, { cache: 'no-store', headers: { apikey: KEY, Authorization: 'Bearer ' + tok } }))
+    .then(r => { if (!r.ok) throw new Error(path); return r.json(); });
   const live = () => Promise.all([
     sb('requests?select=*&order=no'),
     sb('milestones?select=*&order=date'),
@@ -366,16 +371,34 @@ footer b{color:var(--ink)}
     sb('site_status?select=*&id=eq.1'),
     sb('update_log?select=date,text&order=created_at.desc&limit=30')
   ]).then(([req, ms, ws, st, log]) => [req.map(r => Object.assign({}, r, { received: r.received || '', note: r.note || '' })), ms, ws, Object.assign({}, st[0] || {}, { log })]);
-  // Fallback: the snapshot files in /data if the live source is unreachable.
-  const get = f => fetch('data/' + f + '?v=' + Date.now(), { cache: 'no-store' }).then(r => { if (!r.ok) throw new Error(f); return r.json(); });
-  const snapshot = () => Promise.all([get('requests.json'), get('milestones.json'), get('workstreams.json'), get('status.json')]);
-  live().catch(snapshot)
+  const signIn = msg => {
+    $('#updated').textContent = 'Sign in to view';
+    const t = $('#takeaway'); t.textContent = '';
+    const f = el('form', 'signin');
+    f.append(el('p', null, msg || 'Please sign in with the same email and password you use for the open questions page.'));
+    const em = el('input'); em.type = 'email'; em.placeholder = 'Email'; em.required = true; em.autocomplete = 'username';
+    const pw = el('input'); pw.type = 'password'; pw.placeholder = 'Password'; pw.required = true; pw.autocomplete = 'current-password';
+    const bt = el('button', null, 'Sign in'); bt.type = 'submit';
+    [em, pw, bt].forEach(x => { x.style.cssText = 'display:block;margin:8px 0;padding:8px 10px;font:inherit;width:100%;max-width:320px;box-sizing:border-box'; });
+    f.append(em, pw, bt);
+    f.addEventListener('submit', async e => {
+      e.preventDefault(); bt.disabled = true;
+      const { error } = await client.auth.signInWithPassword({ email: em.value.trim(), password: pw.value });
+      if (error) { bt.disabled = false; f.firstChild.textContent = 'That email and password did not match. Please try again.'; return; }
+      location.reload();
+    });
+    t.append(f);
+  };
+  live()
     .then(([req, ms, ws, st]) => render(req, ms, ws, st))
-    .catch(() => { $('#takeaway').textContent = 'The latest status could not be loaded. Please refresh the page in a moment.'; $('#updated').textContent = 'Not loaded'; });
+    .catch(err => {
+      if (err && err.message === 'signin') return signIn();
+      $('#takeaway').textContent = 'The latest status could not be loaded. Please refresh the page in a moment.'; $('#updated').textContent = 'Not loaded';
+    });
 
   // Price Paige's request list (loaded on its own so the rest of the page never waits on it)
   const pstate = { show: 'own', who: '' };
-  sb('pbc_items?select=*&order=no').catch(() => get('pbc.json')).then(renderPbc).catch(() => { $('#pbc-sec').hidden = true; });
+  sb('pbc_items?select=*&order=no').then(renderPbc).catch(() => { $('#pbc-sec').hidden = true; });
   function renderPbc(items) {
     const cov = items.filter(i => i.coverage === 'Covered').length;
     const part = items.filter(i => i.coverage === 'Partly covered').length;
