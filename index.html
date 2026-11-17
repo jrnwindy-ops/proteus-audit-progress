@@ -58,6 +58,14 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15p
 
 main.wrap{display:flex;flex-direction:column;gap:28px;padding-block:28px 40px}
 
+/* congratulations banner */
+.congrats{display:flex;gap:18px;align-items:center;background:var(--warn-bg);border:1px solid var(--gold);border-left:8px solid var(--gold);border-radius:10px;padding:20px 24px;box-shadow:var(--shadow)}
+.congrats-icon{flex:none;width:52px;height:52px;border-radius:50%;background:var(--gold);color:var(--navy);display:grid;place-items:center;font-size:26px;line-height:1}
+.congrats-k{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-d)}
+.congrats h2{font-family:var(--serif);font-weight:600;font-size:clamp(20px,2.6vw,28px);line-height:1.2;margin:4px 0 6px;color:var(--ink);text-wrap:balance}
+.congrats p{margin:0;max-width:72ch;font-size:15px;color:var(--ink)}
+@media (max-width:560px){.congrats{flex-direction:column;align-items:flex-start;padding:18px}}
+
 /* hero */
 .hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:28px;box-shadow:var(--shadow)}
 .kicker{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--teal)}
@@ -223,6 +231,15 @@ footer b{color:var(--ink)}
 </header>
 
 <main class="wrap">
+  <section class="congrats" aria-label="Congratulations">
+    <div class="congrats-icon" aria-hidden="true">&#9733;</div>
+    <div>
+      <div class="congrats-k">November 16, 2026</div>
+      <h2>Congratulations on delivering your audit package on time!</h2>
+      <p>The final trial balance, schedule of federal awards and supporting schedules went to Price Paige today, right on schedule. Thank you to the whole Proteus team for the hard work that made this possible.</p>
+    </div>
+  </section>
+
   <section class="hero" aria-labelledby="h-where">
     <div>
       <div class="kicker">Progress report</div>
