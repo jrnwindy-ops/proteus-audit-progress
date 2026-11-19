@@ -377,11 +377,11 @@ function body(it, s, fl, m){
     ${s.updated_at && s.status !== 'Not yet' ? `<p class="q-meta">Marked ${esc(s.status)} by ${esc(s.updated_name || s.updated_by || '')} &middot; ${fmt(s.updated_at)}${s.note ? '<br>' + esc(s.note) : ''}</p>` : ''}
     ${fl.length ? `<div class="files">${fl.map(f => `<span class="file">&#128206; <a data-path="${esc(f.path)}" data-name="${esc(f.name)}" role="button" tabindex="0">${esc(f.name)}</a> <span class="sz">${kb(f.size)} &middot; ${esc(f.uploader_name || f.uploaded_by)} &middot; ${fmt(f.created_at)}</span></span>`).join('')}</div>` : ''}
     ${locked ? '<p class="q-meta">This month is locked.</p>' : `
-    <textarea id="r-${it.id}" data-draft="${it.id}" placeholder="Optional note, for example which accounts are included or what is still coming">${esc(drafts[it.id] || '')}</textarea>
+    <textarea id="r-${it.id}" data-draft="${it.id}" placeholder="Optional note, for example which accounts are included or what is still coming">${esc(drafts[dk(it.id)] || '')}</textarea>
     <div class="pick" data-drop="${it.id}">
       <div class="actions"><button type="button" class="ghost" data-act="pick" data-i="${it.id}">Choose documents</button><span class="hint">or drag files here. PDF, Excel, Word, images, up to 50 MB each.</span></div>
       <input type="file" id="f-${it.id}" data-file-in="${it.id}" multiple hidden>
-      <div class="chosen">${(pending[it.id] || []).map((f, i) => `<span class="file">${esc(f.name)} <span class="sz">${kb(f.size)}</span><button type="button" class="ghost" data-act="unpick" data-i="${it.id}" data-n="${i}">Remove</button></span>`).join('')}</div>
+      <div class="chosen">${(pending[dk(it.id)] || []).map((f, i) => `<span class="file">${esc(f.name)} <span class="sz">${kb(f.size)}</span><button type="button" class="ghost" data-act="unpick" data-i="${it.id}" data-n="${i}">Remove</button></span>`).join('')}</div>
     </div>
     <div class="actions">
       <button type="button" data-act="upload" data-i="${it.id}">Upload to ${esc(m.label)}</button>
@@ -392,6 +392,9 @@ function body(it, s, fl, m){
     </div>`}
   </div>`;
 }
+// Unsaved notes and chosen files belong to one month and one item, so switching
+// months never carries them over to the same item in another month.
+function dk(id){ return cur + ':' + id; }
 async function setStatus(id, status, note){
   return sb.from('close_status').upsert({ month_id: cur, item_id: id, status, note: note || null }, { onConflict: 'month_id,item_id' });
 }
@@ -408,10 +411,10 @@ $('list').addEventListener('click', async e => {
   const b = e.target.closest('button[data-act]'); if (!b) return;
   const id = Number(b.dataset.i), act = b.dataset.act, note = ($('r-' + id)?.value || '').trim();
   if (act === 'pick'){ $('f-' + id).click(); return; }
-  if (act === 'unpick'){ pending[id].splice(Number(b.dataset.n), 1); return render(); }
+  if (act === 'unpick'){ pending[dk(id)].splice(Number(b.dataset.n), 1); return render(); }
   b.disabled = true;
   if (act === 'upload'){
-    const att = pending[id] || [];
+    const att = pending[dk(id)] || [];
     if (!att.length){ b.disabled = false; alertBox(b, 'Choose at least one document first.'); return; }
     busy.add(id);
     const failed = [];
@@ -426,7 +429,7 @@ $('list').addEventListener('click', async e => {
       if (ins.error) failed.push(f);
     }
     if (note && failed.length < att.length) await setStatus(id, 'Uploaded', note);
-    busy.delete(id); pending[id] = failed; drafts[id] = '';
+    busy.delete(id); pending[dk(id)] = failed; drafts[dk(id)] = '';
     await load();
     if (failed.length) alertBox($('f-' + id), failed.length + ' document' + (failed.length > 1 ? 's' : '') + ' did not upload. Please try again.');
     return;
@@ -434,7 +437,7 @@ $('list').addEventListener('click', async e => {
   if ((act === 'Need help' || act === 'Not applicable') && !note && act === 'Need help'){ b.disabled = false; $('r-' + id).focus(); alertBox(b, 'Add a short note so we know what you need.'); return; }
   const { error } = await setStatus(id, act, note);
   if (error){ b.disabled = false; alertBox(b, 'Could not save. Please try again.'); return; }
-  drafts[id] = '';
+  drafts[dk(id)] = '';
   await load();
 });
 $('list').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && (e.target.dataset.toggle || e.target.dataset.path)){ e.preventDefault(); e.target.click(); } });
@@ -443,12 +446,12 @@ function alertBox(el, m){ const s = document.createElement('span'); s.className 
 function addFiles(id, list){
   const ok = [], big = [];
   for (const f of list) (f.size > MAXB ? big : ok).push(f);
-  pending[id] = (pending[id] || []).concat(ok);
+  pending[dk(id)] = (pending[dk(id)] || []).concat(ok);
   render();
   if (big.length) alertBox($('f-' + id), big.map(f => f.name).join(', ') + ' is over 50 MB. Please email it or split it.');
 }
 $('list').addEventListener('change', e => { const id = e.target.dataset.fileIn; if (id) addFiles(Number(id), [...e.target.files]); });
-$('list').addEventListener('input', e => { const id = e.target.dataset.draft; if (id) drafts[id] = e.target.value; });
+$('list').addEventListener('input', e => { const id = e.target.dataset.draft; if (id) drafts[dk(id)] = e.target.value; });
 $('list').addEventListener('dragover', e => { const z = e.target.closest('[data-drop]'); if (z){ e.preventDefault(); z.classList.add('over'); } });
 $('list').addEventListener('dragleave', e => { const z = e.target.closest('[data-drop]'); if (z) z.classList.remove('over'); });
 $('list').addEventListener('drop', e => { const z = e.target.closest('[data-drop]'); if (!z) return; e.preventDefault(); addFiles(Number(z.dataset.drop), [...e.dataTransfer.files]); });
